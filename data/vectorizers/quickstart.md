@@ -1,0 +1,1 @@
+# vectorizer artifact storage rules
