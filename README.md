@@ -96,5 +96,12 @@ Contributions are welcome! If you'd like to improve this project, please follow 
 
 
 ## Author
-Elsayed Elmandoh - NLP Engineer 
-* Connect on LinkedIn & X [Linktree](https://linktr.ee/elsayedelmandoh)
+
+Khaled - ai engineer
+* Connect on linkedin
+
+salma essam - ai engineer
+* Connect on linkedin
+
+elsayed elmandoh - nlp engineer 
+* Connect on linkedin
