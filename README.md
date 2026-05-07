@@ -98,10 +98,10 @@ Contributions are welcome! If you'd like to improve this project, please follow 
 ## Author
 
 Khaled - ai engineer
-* Connect on linkedin
+* Connect on [linkedin]()
 
 salma essam - ai engineer
-* Connect on linkedin
+* Connect on [linkedin]()
 
 elsayed elmandoh - nlp engineer 
-* Connect on linkedin
+* Connect on [linkedin]()
