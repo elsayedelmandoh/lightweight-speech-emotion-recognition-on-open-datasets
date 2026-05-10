@@ -24,5 +24,11 @@ Include a link to this Zenodo page - https://zenodo.org/record/1188976
 
 Watch a sample of the RAVDESS [speech](https://www.youtube.com/watch?v=Y7OQoNEu3dY) and [song](https://www.youtube.com/watch?v=XQkmH4oYZkg) videos.
 
+## Emotion Classification Users
+
+If you're interested in using machine learning to classify emotional expressions with the RAVDESS, please see our new RAVDESS Facial Landmark Tracking data set [Zenodo project page](https://zenodo.org/records/3255102).
+
+
+
 ### Data Link: 
 - RAVDESS: https://zenodo.org/record/1188976 
