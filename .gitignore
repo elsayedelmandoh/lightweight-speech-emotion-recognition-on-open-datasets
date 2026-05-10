@@ -16,7 +16,6 @@ dist/
 
 # data and logs
 data/
-logs/
 *.log
 
 # docs and internal files
