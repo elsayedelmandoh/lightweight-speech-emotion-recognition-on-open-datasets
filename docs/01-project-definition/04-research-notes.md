@@ -10,3 +10,6 @@
 ✅ اقتراح عملي: ابدأوا بـ RAVDESS، ولو الوقت يسمح اعملوا تجربة إضافية على CREMA-D.
 
 
+
+# Mel-frequency Cepstral Coefficients (MFCCs) 
+it are a highly popular feature extraction technique used in Deep Learning (DL) and machine learning for audio processing. They represent the short-term power spectrum of a sound, acting as a compact representation of the audio signal that mimics human hearing
