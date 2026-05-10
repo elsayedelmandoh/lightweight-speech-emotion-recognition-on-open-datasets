@@ -20,7 +20,7 @@ logs/
 *.log
 
 # docs and internal files
-docs/.internal/
+docs/00-internal/
 
 # tools
 .claude/
