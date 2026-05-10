@@ -17,18 +17,18 @@ use this section to define the project before writing code. keep each file focus
 - Out of scope: real-time streaming application. 
 
 ### Expected Deliverables: 
-- Preprocessing pipeline (spectrograms). 
-- Deep and baseline models. 
-- Performance analysis. 
+- Preprocessing pipeline (spectrograms)
+- Deep and baseline models
+- Performance analysis
 
 ### Prerequisite Knowledge / Skills: 
 - Basic audio processing (sampling, STFT) 
 - CNNs 
 
 ### Role of Each Student: 
-- Student A: Audio preprocessing and baseline. 
-- Student B: CNN implementation & training. 
-- Student C: Evaluation and report. 
+- Student A: Audio preprocessing and baseline
+- Student B: CNN implementation & training
+- Student C: Evaluation and report
 
 ### Paper(s) Link: 
 - Neumann & Vu, “Attentive Convolutional Neural Network based Speech Emotion Recognition: 
@@ -45,7 +45,7 @@ https://doi.org/10.1109/IJCNN.2019.8852153
 - Example SER repo: https://github.com/marcogdepinto/emotion-recognition-english 
 
 ### Timeline: 
-- Week 1: Understand data; preprocess. 
-- Week 2: Baseline; CNN; midterm report. 
-- Week 3: Training; cross-speaker experiments. 
-- Week 4: Finalization.
+- Week 1: Understand data; preprocess
+- Week 2: Baseline; CNN; midterm report
+- Week 3: Training; cross-speaker experiments
+- Week 4: Finalization

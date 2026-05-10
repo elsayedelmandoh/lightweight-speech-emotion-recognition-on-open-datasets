@@ -1,63 +1,68 @@
 # repository structure and file responsibilities
 
-## project structure
+## actual project structure
 
 ```text
-project-name/
-├── app.py
-├── requirements.txt
+project/
+├── app.py                  # entrypoint (currently broken imports)
+├── requirements.txt        # python dependencies
+├── pyproject.toml          # build config, pytest config
+├── .env.example            # env template (currently empty)
+├── .gitignore              # fully commented out - nothing ignored!
+├── opencode.json           # opencode cli config
 ├── src/
 │   ├── __init__.py
-│   ├── setup.py
+│   ├── setup.py            # ensure_directories() helper
 │   ├── config/
 │   │   ├── __init__.py
-│   │   ├── loader.py
-│   │   └── settings.py
-│   ├── database/
+│   │   └── settings.py     # typed settings (stub)
+│   ├── utils/
 │   │   ├── __init__.py
-│   │   ├── connection.py
-│   │   ├── migrations/
-│   │   │   └── __init__.py
-│   │   └── repositories/
-│   │       ├── __init__.py
-│   │       ├── feature_repo.py
-│   │       └── model_repo.py
-│   └── utils/
-│       ├── __init__.py
-│       ├── data_loader.py
-│       ├── data_uploader.py
-│       └── helpers.py
-├── tests/
-│   ├── __init__.py
-│   └── 00-quickstart.md
+│   │   └── helpers.py      # shared helpers (stub)
+│   └── models/
+│       └── __init__.py     # model definitions (empty)
 ├── notebooks/
 │   ├── 00-quickstart.ipynb
-│   └── ...
+│   ├── 01-data-acquisition/
+│   ├── 02-eda/
+│   ├── 03-data-preprocessing/
+│   ├── 04-feature-engineering/
+│   ├── 05-model-training/
+│   ├── 06-model-evaluation/
+│   └── 07-model-testing/
 ├── data/
-│   ├── raw/
-│   ├── processed/
-│   ├── samples/
-│   ├── models/
-│   ├── predictions/
-│   ├── vectorizers/
-│   └── remote_cache/
+│   ├── raw/                # original ravdess wavs
+│   ├── processed/          # cleaned audio, feature arrays
+│   ├── models/             # saved model checkpoints
+│   ├── predictions/        # inference outputs
+│   └── samples/            # small test fixtures
+├── tests/                  # not yet created
 └── docs/
-	└── ...
+    ├── 00-internal/
+    ├── 01-project-definition/
+    ├── 02-results/
+    └── 03-deliverables/
 ```
 
-## directory explanation
+## directory responsibilities
 
-- app.py: entrypoint for local startup and quick validation.
-- src/config: runtime configuration and environment loading.
-- src/database: connection helpers, migrations, and repository code.
-- src/utils: shared utilities that do not belong in a feature module.
-- notebooks: exploratory and iterative work that should later be moved into src/.
-- tests: unit and integration coverage for the critical paths.
-- data/raw: source data kept as close to the original form as possible.
-- data/processed: cleaned and transformed datasets.
-- data/samples: small fixture-like datasets for fast iteration.
-- data/models: serialized model artifacts.
-- data/predictions: output predictions and inference results.
-- data/vectorizers: fitted text or feature preprocessing artifacts.
-- data/remote_cache: downloaded or cached external artifacts.
+- `app.py`: entrypoint for local startup. currently non-functional due to broken imports.
+- `src/config`: runtime configuration and environment loading. all hyperparameters go here.
+- `src/utils`: shared utilities (data loading, label parsing, plotting). all notebooks import from here.
+- `src/models`: model class definitions (cnn, svm wrapper). logic to be refactored from notebooks.
+- `notebooks/`: primary workspace. numbered and sequential. stable logic gets migrated to `src/`.
+- `data/raw`: source data, kept as close to original form as possible.
+- `data/processed`: cleaned audio, extracted features (.npy arrays).
+- `data/models`: serialized model artifacts (.pt, .pkl).
+- `data/predictions`: output predictions and inference results.
+- `data/samples`: small fixture-like datasets for fast iteration.
+- `tests/`: unit and integration coverage. not yet created.
 
+## import convention
+
+```python
+from src.config.settings import *
+from src.utils.helpers import *
+```
+
+`settings.py` and `helpers.py` are currently stubs. populate them as logic is refactored out of notebooks.
