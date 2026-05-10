@@ -23,7 +23,5 @@ logs/
 docs/00-internal/
 
 # tools
-.claude/
-.opencode/
-CLAUDE.md
+opencode.json
 AGENTS.md
