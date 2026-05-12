@@ -82,6 +82,35 @@ Each of the 7356 RAVDESS files has a unique filename. The filename consists of a
 7. 12th Actor (12)
 8. Female, as the actor ID number is even.
 
+## 📁 Dataset Nomenclature (File Naming Convention)
+
+The RAVDESS dataset follows a strict numerical naming convention. Each filename (e.g., `03-01-06-01-02-01-12.wav`) consists of a **7-part numerical identifier**. 
+
+### Identifier Breakdown
+
+| Position | Identifier | Values & Meanings |
+| :--- | :--- | :--- |
+| **1st** | **Modality** | 01 = full-AV, 02 = video-only, **03 = audio-only** |
+| **2nd** | **Vocal Channel** | **01 = speech**, 02 = song |
+| **3rd** | **Emotion** | 01 = neutral, 02 = calm, 03 = happy, 04 = sad, 05 = angry, **06 = fearful**, 07 = disgust, 08 = surprised |
+| **4th** | **Emotional Intensity** | **01 = normal**, 02 = strong |
+| **5th** | **Statement** | 01 = "Kids are talking by the door", **02 = "Dogs are sitting by the door"** |
+| **6th** | **Repetition** | **01 = 1st repetition**, 02 = 2nd repetition |
+| **7th** | **Actor ID** | 01 to 24 (**Odd numbers = Male**, **Even numbers = Female**) |
+
+---
+
+### Example Decoding: `03-01-06-01-02-01-12.wav`
+* **03**: Audio-only
+* **01**: Speech
+* **06**: **Fearful** (Target Label)
+* **01**: Normal intensity
+* **02**: Statement: "Dogs are sitting by the door"
+* **01**: First repetition
+* **12**: Female Actor (Actor 12)
+
+> **💡 Quick Tip for Data Loading:**
+> If you are building a classifier, the **3rd identifier** is your primary Label ($y$), and the **7th identifier** can be used to perform a Gender-stratified split or to ensure the model doesn't overfit to specific speakers.
 
 ## Data Link: 
 
