@@ -1,6 +1,6 @@
 # team contributions
 
-## student a - audio preprocessing and baseline
+## elsayed - audio preprocessing and baseline
 
 ### completed
 - downloaded and verified ravdess dataset (1440 audio files).
@@ -13,7 +13,7 @@
 - implement and train svm baseline with grid search.
 - implement data augmentation (time shift, noise injection, speed perturbation).
 
-## student b - cnn implementation and training
+## salma - cnn implementation and training
 
 ### completed
 - designed 1d cnn architecture (3 conv blocks, global average pooling, fully connected head).
@@ -25,7 +25,7 @@
 - run training experiments with hyperparameter tuning.
 - run ablation experiments (number of mel bands, conv blocks, regularization).
 
-## student c - evaluation and report
+## khaled - evaluation and report
 
 ### completed
 - defined evaluation metrics: accuracy, per-class f1, confusion matrix, latency, model size.

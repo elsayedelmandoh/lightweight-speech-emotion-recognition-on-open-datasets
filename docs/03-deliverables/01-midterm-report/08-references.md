@@ -6,8 +6,6 @@
 
 [3] s. r. livingstone and f. a. russo, "the ryerson audio-visual database of emotional speech and song (ravdess): a dynamic, multimodal set of facial and vocal expressions in north american english," plos one, vol. 13, no. 5, e0196391, 2018. available: https://doi.org/10.1371/journal.pone.0196391
 
-[4] marcogdepinto, "emotion-recognition-english," github repository. available: https://github.com/marcogdepinto/emotion-recognition-english
+[4] tuncayka, "speech_emotion," github repository. available: https://github.com/tuncayka/speech_emotion
 
-[5] tuncayka, "speech_emotion," github repository. available: https://github.com/tuncayka/speech_emotion
-
-[6] s. r. livingstone and f. a. russo, "ravdess dataset," zenodo, 2018. available: https://zenodo.org/record/1188976
+[5] s. r. livingstone and f. a. russo, "ravdess dataset," zenodo, 2018. available: https://zenodo.org/record/1188976
