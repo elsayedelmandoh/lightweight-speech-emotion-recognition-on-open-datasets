@@ -12,7 +12,6 @@ project/
 ├── opencode.json           # opencode cli config
 ├── src/
 │   ├── __init__.py
-│   ├── setup.py            # ensure_directories() helper
 │   ├── config/
 │   │   ├── __init__.py
 │   │   └── settings.py     # typed settings (stub)
@@ -32,6 +31,9 @@ project/
 │   └── 07-model-testing/
 ├── data/
 │   ├── raw/                # original ravdess wavs
+│   ├── train/                # training ravdess wavs
+│   ├── val/                # val ravdess wavs
+│   ├── test/                # test ravdess wavs
 │   ├── processed/          # cleaned audio, feature arrays
 │   ├── models/             # saved model checkpoints
 │   ├── predictions/        # inference outputs
@@ -42,6 +44,19 @@ project/
     ├── 01-project-definition/
     ├── 02-results/
     └── 03-deliverables/
+        ├── 01-midterm-report/
+            ├── 01-title-and-abstract.md
+            ├── 02-introduction.md
+            ├── 03-related-work.md
+            ├── 04-methodology.md
+            ├── 05-preliminary-experiments-and-results.md
+            ├── 06-planned-work-and-timeline.md
+            ├── 07-team-contributions.md
+            ├── 08-references.md
+            └── 09-midterm-report.md
+        ├── 02-final-report/
+        └── 03-presentation/
+
 ```
 
 ## directory responsibilities
@@ -52,6 +67,9 @@ project/
 - `src/models`: model class definitions (cnn, svm wrapper). logic to be refactored from notebooks.
 - `notebooks/`: primary workspace. numbered and sequential. stable logic gets migrated to `src/`.
 - `data/raw`: source data, kept as close to original form as possible.
+- `data/train`: training dataset
+- `data/val`: val dataset
+- `data/test`: test dataset
 - `data/processed`: cleaned audio, extracted features (.npy arrays).
 - `data/models`: serialized model artifacts (.pt, .pkl).
 - `data/predictions`: output predictions and inference results.

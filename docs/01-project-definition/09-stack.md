@@ -1,38 +1,35 @@
 # stack overview and tooling choices
 
-# expertise
-ml, dl, nlp, genai, agentic ai
-
 ## core stack
 - language: python 3.12
 - environment: conda
-- entrypoint: app.py
+- packages: pip install -r requirements.txt (currently only pytest)
+- entrypoint: app.py (currently broken imports - use notebooks instead)
 - reusable code: src/
 - tests: tests/
 - notebooks: notebooks/
 - docs: docs/
-- data layout: data/raw, data/processed, data/samples, data/models, data/predictions, data/vectorizers, data/remote_cache
-- project manager: gemini 3.1 pro
+- data layout: data/{raw,train,val,test,processed,samples,models,predictions}
 - ide: vscode (wsl2)
-- architect: claude 4.6 opus
-- implementation: glm5, kimi k2.5, qwen 3.6 pro
-- code review: claude 4.6 opus
-- deployment: hugging face, docker
 
 ## common libraries
-- numpy
-- pandas
-- matplotlib
-- seaborn
-- scikit-learn
-- pytorch
-- scipy
-- nltk
-- transformers
 
-## project rules
-- keep dependencies minimal until a feature needs them
-- add a library only when it supports a concrete use case
-- keep notebooks for exploration and move stable logic into src/
-- keep tests deterministic and repeatable
+### audio processing
+- librosa: loading wav, mel spectrogram, mfcc, silence trimming, augmentation
+- numpy: array operations, feature caching (.npy)
+- scipy: wav i/o alternative
+
+### deep learning
+- pytorch: 1d cnn model, training loop, checkpointing, torchscript export
+
+### machine learning
+- scikit-learn: svm, grid search, metrics (accuracy, f1, confusion_matrix), train_test_split
+
+### visualization
+- matplotlib: training curves, confusion matrix heatmaps
+- seaborn: advanced confusion matrix, per-class metrics plots
+
+### data handling
+- pandas: filename parsing, label dataframes, per-speaker analysis
+
 

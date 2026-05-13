@@ -4,9 +4,9 @@
 
 - **cpu inference only.** no gpu required at inference time. model must run on a single cpu core in < 100ms per clip.
 - **model size < 5mb.** must fit comfortably in memory on edge/embedded devices.
-- **open datasets only.** ravdess (primary). crema-d (optional secondary). no proprietary data.
+- **open datasets only.** ravdess (primary, 2452 audio-only files). crema-d (optional secondary). no proprietary data.
 - **no real-time streaming.** batch inference on fixed-length clips only. streaming is explicitly out of scope.
-- **no data augmentation beyond standard audio transforms.** no generative augmentation (tts, voice conversion).
+- **data augmentation limited to standard audio transforms.** time shift, noise injection, speed perturbation are allowed. no generative augmentation (tts, voice conversion).
 
 ## assumptions
 

@@ -18,3 +18,4 @@ speech emotion recognition (ser) remains unreliable in real-world conditions. mo
 - open datasets like ravdess make reproducible research possible without proprietary data.
 - 1d cnns on spectrograms offer a middle ground: they capture local temporal/frequency patterns with far fewer parameters than 2d cnns or transformer-based models.
 - cpu inference is a hard requirement for real-world deployment scenarios (embedded, mobile, web api).
+- ravdess includes both speech and song data (2452 audio-only files), allowing us to test whether models generalize across vocal channels - a question underexplored in ser literature.
