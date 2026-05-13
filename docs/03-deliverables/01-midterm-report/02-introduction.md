@@ -8,7 +8,7 @@ the core tension in ser is between accuracy and efficiency. classical methods su
 
 ## motivation
 
-there is a clear need for ser models that occupy the middle ground: architectures that leverage the pattern-recognition capabilities of convolutional networks while remaining small enough for cpu inference. 1d cnns offer a promising direction because they operate directly on the time axis of mel spectrograms with frequency bands as input channels, requiring far fewer parameters than 2d cnns that treat spectrograms as images [1]. additionally, the ravdess dataset includes both speech and song recordings, enabling investigation of cross-channel generalization - a relatively underexplored question in ser literature.
+there is a clear need for ser models that occupy the middle ground: architectures that leverage the pattern-recognition capabilities of convolutional networks while remaining small enough for cpu inference. 1d cnns offer a promising direction because they operate directly on the time axis of mel spectrograms with frequency bands as input channels, requiring far fewer parameters than 2d cnns that treat spectrograms as images [2]. additionally, the ravdess dataset includes both speech and song recordings, enabling investigation of cross-channel generalization - a relatively underexplored question in ser literature.
 
 ## project scope
 

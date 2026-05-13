@@ -2,8 +2,10 @@
 
 ## key papers
 
-### paper 01- The Ryerson Audio-Visual Database of Emotional Speech and Song (RAVDESS): A dynamic, multimodal set of facial and vocal expressions in North American English
+### paper 01- The Ryerson Audio-Visual Database of Emotional Speech and Song (RAVDESS): A dynamic, multimodal set of facial and vocal expressions in North American English   
+s. r. livingstone and f. a. russo, "the ryerson audio-visual database of emotional speech and song (ravdess): a dynamic, multimodal set of facial and vocal expressions in north american english," plos one, vol. 13, no. 5, e0196391, 2018. available: https://doi.org/10.1371/journal.pone.0196391
 - link: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0196391
+
 
 ### paper 02- neumann & vu (2017) - attentive cnn for ser
 - paper: "attentive convolutional neural network based speech emotion recognition: a study on the impact of input features, signal length, and acted speech"
@@ -19,6 +21,7 @@
 
 ### paper 04- Speech Emotion Recognition Using MFCC Features and LSTM-Based Deep Learning Model
 - link: https://arxiv.org/abs/2604.25938
+
 
 ### reference implementations
 
