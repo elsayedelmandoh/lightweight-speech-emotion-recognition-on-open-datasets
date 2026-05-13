@@ -20,7 +20,7 @@
 ### paper 04- Speech Emotion Recognition Using MFCC Features and LSTM-Based Deep Learning Model
 - link: https://arxiv.org/abs/2604.25938
 
+### reference implementations
 
-## how our project builds on them/differs
-
+- tuncayka/speech_emotion - [github](https://github.com/tuncayka/speech_emotion)
 
