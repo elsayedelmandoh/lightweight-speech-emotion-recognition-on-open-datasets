@@ -15,7 +15,11 @@ dist/
 .idea/
 
 # data and logs
-data/
+archive.zip
+data/raw/
+data/train/
+data/val/
+data/test/
 *.log
 
 # docs and internal files
