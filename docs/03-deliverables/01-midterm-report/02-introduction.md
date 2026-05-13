@@ -2,9 +2,9 @@
 
 ## problem statement
 
-emotion recognition from speech is a fundamental task in affective computing with direct applications in healthcare (mental health screening), human-computer interaction (adaptive dialogue systems), and customer service (call center analytics). despite significant progress in deep learning-based approaches, most existing ser systems require substantial computational resources - typically gpu-based inference - which limits their deployment on edge devices, mobile platforms, and low-cost web apis.
+human speech carries rich paralinguistic information beyond lexical content; prosody, rhythm, and spectral characteristics encode a speaker's emotional state in ways that are both computationally accessible and practically valuable. despite substantial progress in automatic speech recognition (asr), robust emotion recognition from speech remains an open problem, complicated by speaker variability, cultural differences in expression, and the inherent ambiguity of affective labels
 
-the core tension in ser is between accuracy and efficiency. classical methods such as mfcc features with svm classifiers are lightweight but achieve modest accuracy on ravdess (50-65%) because they fail to capture the temporal and spectral dynamics of emotional speech. conversely, deep learning models - including 2d cnns, lstms, and transformers - achieve higher accuracy but are often over-parameterized for the task, making deployment on cpu-only environments impractical.
+the core tension in ser is between accuracy and efficiency. classical methods such as mfcc features with svm classifiers are lightweight but achieve modest accuracy on ravdess (50-65%) because they fail to capture the temporal and spectral dynamics of emotional speech. conversely, deep learning models including 2d cnns achieve higher accuracy but are often over-parameterized for the task, making deployment on cpu-only environments impractical.
 
 ## motivation
 

@@ -205,3 +205,49 @@ same IEEE format:
 
 > Bonus up to +5 pts for publishable-level results (e.g., near state-of-the-art on subset, strong novel analysis, or submission-ready draft)
 ---
+
+## Policy on GenAI Use
+
+To ensure authentic learning and fair assessment:
+
+### Allowed GenAI use (with disclosure):
+
+- Brainstorming ideas and clarifying concepts (e.g., “Explain cross-entropy loss”).
+- Assistance with debugging after you attempt to fix it.
+- Help with English phrasing (grammar, minor style edits).
+
+### Not allowed:
+- Generating code that you then claim as your own without understanding it.
+- Generating large portions of the report (sections, literature review) via GenAI.
+- Generating experimental results or “fake” figures/tables.
+- Asking GenAI to directly implement the assigned paper or project end-to-end.
+
+### Neutralization mechanisms:
+1. Oral Defense & Q&A:
+    - In certain cases, each team member will be asked detailed technical questions (e.g.,
+    why you chose a learning rate, implications of certain layers).
+    - Inability to explain code or design choices will significantly reduce credit for that part, regardless of how good the code looks.
+
+2. Code Review:
+    - Instructors may ask you to walk through key functions line-by-line.
+    - Random code snippets may be chosen for explanation.
+
+3. Reproducibility Checks:
+    - The instructor may run your code in a clean environment.
+    - If scripts break or hyperparameters are undocumented, points are deducted.
+
+4. Process Documentation:
+    - You must maintain a brief development log (in LOG.md) describing weekly progress, key
+    decisions, and issues encountered.
+    - Logs must be consistent with Git commit history.
+
+5. GenAI Use Disclosure:
+    - Add a short section in both midterm and final reports titled “Use of GenAI Tools”
+    describing where/how you used them (if at all).
+    - Honest disclosure will not be penalized; hidden use discovered later will be.
+
+6. Writing Style Consistency:
+    - Report writing style will be compared with previous coursework when available. Abrupt,
+    unexplained shifts may trigger closer review and questioning.
+
+By combining technical questioning, code walkthroughs, and reproducibility checks, reliance on GenAI for core intellectual work will yield little advantage. Understanding and original thought are what will be graded.
