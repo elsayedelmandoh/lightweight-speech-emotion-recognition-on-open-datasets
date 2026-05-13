@@ -17,6 +17,12 @@ TRAIN_DIR = DATA_DIR / "train"
 VAL_DIR = DATA_DIR / "val"
 TEST_DIR = DATA_DIR / "test"
 
+# processed data paths
+PROCESSED = DATA_DIR / "processed"
+
+# sample data paths (for preliminary experiments)
+SAMPLES = DATA_DIR / "samples"
+
 # emotion label mapping
 EMOTION_MAP = {
     1: "neutral",
@@ -54,3 +60,5 @@ FEATURES_SONG_MFCC = PROCESSED_DIR / "features_song_mfcc.npy"
 LABELS_SPEECH = PROCESSED_DIR / "labels_speech.npy"
 LABELS_SONG = PROCESSED_DIR / "labels_song.npy"
 
+# save figures
+FIGURES_DIR = BASE_DIR / "docs" / "02-results"
