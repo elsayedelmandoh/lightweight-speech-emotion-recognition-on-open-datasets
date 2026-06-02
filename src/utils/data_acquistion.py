@@ -2,7 +2,7 @@
 
 from pathlib import Path
 import pandas as pd
-from src.config.settings import EMOTION_MAP, SPLIT_THRESHOLDS
+from src.config.config import EMOTION_MAP, SPLIT_THRESHOLDS
 
 
 def count_wavs(dirpath):

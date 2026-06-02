@@ -2,7 +2,7 @@
 
 import numpy as np
 import librosa
-from src.config.settings import SAMPLE_RATE, N_MELS, N_MFCC, N_FFT, HOP_LENGTH
+from src.config.config import SAMPLE_RATE, N_MELS, N_MFCC, N_FFT, HOP_LENGTH
 
 def extract_mel(fp):
     """load wav and return log-mel spectrogram (transposed for 1d cnn).
