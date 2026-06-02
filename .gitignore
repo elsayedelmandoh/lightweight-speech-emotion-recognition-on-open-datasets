@@ -29,3 +29,6 @@ data/samples/test/
 # docs and internal files
 docs/00-internal/
 
+# tools
+opencode.json
+AGENTS.md
