@@ -241,8 +241,8 @@ include a link to the zenodo page: https://zenodo.org/record/1188976
 
 ## author
 
-developed by elsayed elmandoh - nlp engineer.
+developed by 
 
-- linkedin: [elsayed elmandoh](https://www.linkedin.com/in/elsayed-elmandoh)
-- linkedin: [khaled ahmed](https://www.linkedin.com/in/khaled-ahmed202/)
-- linkedin: [salma abdelfattah](https://www.linkedin.com/in/salma-essam-atya/)
+- elsayed elmandoh - nlp engineer - [linkedin](https://www.linkedin.com/in/elsayed-elmandoh)
+- khaled ahmed - data scientist & ml - [linkedin](https://www.linkedin.com/in/khaled-ahmed202/)
+- salma abdelfattah - ai software engineer - [linkedin](https://www.linkedin.com/in/salma-essam-atya/)
