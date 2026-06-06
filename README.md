@@ -59,21 +59,43 @@ lightweight speech emotion recognition on open datasets/
 │   ├── 02-results/
 │   └── 03-deliverables/            # midterm/final report, presentation
 ├── notebooks/                      # sequential, run in order
-│   ├── 00-quickstart/00-quickstart.ipynb
-│   ├── 01-data-acquisition/01-data-acquisition.ipynb
-│   ├── 02-eda/02-eda.ipynb
-│   ├── 03-data-preprocessing/03-data-preprocessing.ipynb
-│   ├── 04-feature-engineering/04-feature-engineering.ipynb
+│   ├── 00-preliminary-experiments/00-quickstart.ipynb
+│   │   ├── artifacts/
+│   │   ├── 00-quickstart.ipynb
+│   │   ├── 01-data-acquisition.ipynb
+│   │   ├── 02-eda.ipynb
+│   │   ├── 03-data-preprocessing.ipynb
+│   │   ├── 04-feature-engineering.ipynb
+│   │   ├── 05-model-training.ipynb
+│   │   ├── 06-model-evaluation.ipynb
+│   │   └── 07-model-testing.ipynb
+│   ├── 01-data-acquisition/
+│   │   ├── 00-quickstart.ipynb
+│   │   └──01-data-acquisition.ipynb
+│   ├── 02-eda/
+│   │   ├── 00-quickstart.ipynb
+│   │   └──02-eda.ipynb
+│   ├── 03-data-preprocessing/
+│   │   ├── 00-quickstart.ipynb
+│   │   └──03-data-preprocessing.ipynb
+│   ├── 04-feature-engineering/
+│   │   ├── 00-quickstart.ipynb
+│   │   └──04-feature-engineering.ipynb
 │   ├── 05-model-training/
+│   │   ├── 00-quickstart.ipynb
 │   │   ├── 05.1-svm-baseline.ipynb
 │   │   └── 05.2-cnn-1d.ipynb
 │   ├── 06-model-evaluation/
+│   │   ├── 00-quickstart.ipynb
 │   │   ├── 06.1-svm-baseline.ipynb
 │   │   └── 06.2-cnn-1d.ipynb
 │   ├── 07-model-testing/
+│   │   ├── 00-quickstart.ipynb
 │   │   ├── 07.1-svm-baseline.ipynb
 │   │   └── 07.2-cnn-1d.ipynb
-│   └── 08-comparision/08-svm-vs-cnn.ipynb
+│   └── 08-comparision/
+│   │   ├── 00-quickstart.ipynb
+│   │   └── 08-svm-vs-cnn.ipynb
 ├── src/
 │   ├── config/config.py            # typed settings (hyperparameters, paths)
 │   ├── utils/
