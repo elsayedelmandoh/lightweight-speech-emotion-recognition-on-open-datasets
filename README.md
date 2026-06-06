@@ -44,7 +44,7 @@ secondary: tripathi et al., "deep neural networks for emotion recognition in spe
 ## project structure
 
 ```
-.
+lightweight speech emotion recognition on open datasets/
 ├── app.py                          # entrypoint (stub)
 ├── pyproject.toml                  # python 3.12, pytest config
 ├── requirements.txt
@@ -198,12 +198,12 @@ input (128, 251) log-mel
 
 ### report & presentation
 
-| deliverable | lead | contributors |
-|-------------|------|--------------|
-| midterm report | salma | elsayed, salma, khaled |
-| final report | elsayed | elsayed, salma, khaled |
-| presentation script | khaled | all review |
-| presentation slides | salma | -- |
+| deliverable | contributors |
+|-------------|--------------|
+| midterm report | elsayed, salma, khaled |
+| final report | elsayed, salma, khaled |
+| presentation script | elsayed, salma, khaled |
+| presentation slides | salma |
 
 ### workflow
 
@@ -244,5 +244,5 @@ include a link to the zenodo page: https://zenodo.org/record/1188976
 developed by elsayed elmandoh - nlp engineer.
 
 - linkedin: [elsayed elmandoh](https://www.linkedin.com/in/elsayed-elmandoh)
-- linkedin: [khaled ashoush](https://www.linkedin.com/in/khaled-ashoush/)
-- linkedin: [salma essam](https://www.linkedin.com/in/salma-essam/)
+- linkedin: [khaled ahmed](https://www.linkedin.com/in/khaled-ahmed202/)
+- linkedin: [salma abdelfattah](https://www.linkedin.com/in/salma-essam-atya/)
