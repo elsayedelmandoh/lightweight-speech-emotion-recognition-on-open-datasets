@@ -45,9 +45,7 @@ secondary: tripathi et al., "deep neural networks for emotion recognition in spe
 
 ```
 lightweight speech emotion recognition on open datasets/
-├── app.py                          # entrypoint (stub)
-├── pyproject.toml                  # python 3.12, pytest config
-├── requirements.txt
+|
 ├── data/
 │   ├── raw/                        # original ravdess audio
 │   ├── processed/                  # X_{train,val,test}_{mel,mfcc}.npy, y_*.npy
@@ -99,13 +97,23 @@ lightweight speech emotion recognition on open datasets/
 ├── src/
 │   ├── config/config.py            # typed settings (hyperparameters, paths)
 │   ├── utils/
-│   │   ├── feature_engineering.py  # extract_mel, extract_mfcc, augmentation
-│   │   └── *.py
+│   │   ├── data_acquisition.py     
+│   │   ├── data_preprocessing.py    
+│   │   ├── eda.py                  
+│   │   └── feature_engineering.py  # extract_mel, extract_mfcc, augmentation
 │   ├── models/
 │   │   ├── cnn1d_model.py          # LightweightCNN1D, train_cnn, predict_cnn, load_cnn
 │   │   └── svm_model.py            # train_svm, predict_svm, load_svm
 │   └── setup.py                    # ensure_directories()
-└── tests/                          # pytest
+├── tests/                          # pytest
+|       └── test_smoke.py    
+├── app.py                          # entrypoint (stub)
+├── pyproject.toml                  # python 3.12, pytest config
+├── requirements.txt
+├── README.md
+├── LICENSE
+├── .gitignore
+└── .env.example       
 ```
 
 
