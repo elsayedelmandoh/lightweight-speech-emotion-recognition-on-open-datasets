@@ -52,10 +52,12 @@ lightweight speech emotion recognition on open datasets/
 │   ├── models/                     # svm_best.pkl, cnn1d_best.pth, cnn1d_meta.json
 │   ├── predictions/                # comparison_results.json
 │   └── samples/                    # small test samples
+|
 ├── docs/
 │   ├── 01-project-definition/      # problem, scope, deliverables
 │   ├── 02-results/
 │   └── 03-deliverables/            # midterm/final report, presentation
+|   
 ├── notebooks/                      # sequential, run in order
 │   ├── 00-preliminary-experiments/00-quickstart.ipynb
 │   │   ├── artifacts/
@@ -67,46 +69,61 @@ lightweight speech emotion recognition on open datasets/
 │   │   ├── 05-model-training.ipynb
 │   │   ├── 06-model-evaluation.ipynb
 │   │   └── 07-model-testing.ipynb
+|   |
 │   ├── 01-data-acquisition/
 │   │   ├── 00-quickstart.ipynb
 │   │   └──01-data-acquisition.ipynb
+|   |
 │   ├── 02-eda/
 │   │   ├── 00-quickstart.ipynb
 │   │   └──02-eda.ipynb
+|   |
 │   ├── 03-data-preprocessing/
 │   │   ├── 00-quickstart.ipynb
 │   │   └──03-data-preprocessing.ipynb
+|   |
 │   ├── 04-feature-engineering/
 │   │   ├── 00-quickstart.ipynb
 │   │   └──04-feature-engineering.ipynb
+|   |
 │   ├── 05-model-training/
 │   │   ├── 00-quickstart.ipynb
 │   │   ├── 05.1-svm-baseline.ipynb
 │   │   └── 05.2-cnn-1d.ipynb
+|   |
 │   ├── 06-model-evaluation/
 │   │   ├── 00-quickstart.ipynb
 │   │   ├── 06.1-svm-baseline.ipynb
 │   │   └── 06.2-cnn-1d.ipynb
+|   |
 │   ├── 07-model-testing/
 │   │   ├── 00-quickstart.ipynb
 │   │   ├── 07.1-svm-baseline.ipynb
 │   │   └── 07.2-cnn-1d.ipynb
+|   |
 │   └── 08-comparision/
-│   │   ├── 00-quickstart.ipynb
-│   │   └── 08-svm-vs-cnn.ipynb
+│       ├── 00-quickstart.ipynb
+│       └── 08-svm-vs-cnn.ipynb
+|   
 ├── src/
-│   ├── config/config.py            # typed settings (hyperparameters, paths)
+│   ├── config/               
+│   │   └── config.py               # typed settings (hyperparameters, paths)
+|   |
 │   ├── utils/
 │   │   ├── data_acquisition.py     
 │   │   ├── data_preprocessing.py    
 │   │   ├── eda.py                  
 │   │   └── feature_engineering.py  # extract_mel, extract_mfcc, augmentation
+|   |
 │   ├── models/
 │   │   ├── cnn1d_model.py          # LightweightCNN1D, train_cnn, predict_cnn, load_cnn
 │   │   └── svm_model.py            # train_svm, predict_svm, load_svm
+|   |
 │   └── setup.py                    # ensure_directories()
+|   
 ├── tests/                          # pytest
 |       └── test_smoke.py    
+|
 ├── app.py                          # entrypoint (stub)
 ├── pyproject.toml                  # python 3.12, pytest config
 ├── requirements.txt
