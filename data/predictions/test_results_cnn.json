@@ -1,0 +1,109 @@
+{
+  "model": "cnn1d",
+  "split": "test",
+  "n_samples": 176,
+  "accuracy": 0.6647727272727273,
+  "per_class": {
+    "neutral": {
+      "support": 16,
+      "correct": 8,
+      "acc": 0.5
+    },
+    "calm": {
+      "support": 32,
+      "correct": 21,
+      "acc": 0.6562
+    },
+    "happy": {
+      "support": 32,
+      "correct": 15,
+      "acc": 0.4688
+    },
+    "sad": {
+      "support": 32,
+      "correct": 24,
+      "acc": 0.75
+    },
+    "angry": {
+      "support": 32,
+      "correct": 27,
+      "acc": 0.8438
+    },
+    "fearful": {
+      "support": 32,
+      "correct": 22,
+      "acc": 0.6875
+    }
+  },
+  "confusion_matrix": [
+    [
+      8,
+      0,
+      1,
+      6,
+      0,
+      1
+    ],
+    [
+      0,
+      21,
+      8,
+      3,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      15,
+      1,
+      1,
+      9
+    ],
+    [
+      0,
+      3,
+      0,
+      24,
+      2,
+      3
+    ],
+    [
+      0,
+      0,
+      1,
+      2,
+      27,
+      2
+    ],
+    [
+      0,
+      0,
+      4,
+      5,
+      1,
+      22
+    ]
+  ],
+  "emotion_names": [
+    "neutral",
+    "calm",
+    "happy",
+    "sad",
+    "angry",
+    "fearful"
+  ],
+  "parameters": 132806,
+  "speakers": [
+    23,
+    24
+  ],
+  "cpu_latency": {
+    "mean_ms": 0.529593499522889,
+    "std_ms": 0.10271673885162871,
+    "p50_ms": 0.5000000091968104,
+    "p99_ms": 0.8626230189111083,
+    "n_runs": 200,
+    "device": "cpu"
+  }
+}

@@ -63,13 +63,13 @@ data is already speaker-disjoint split, no further splitting needed.
 - output: final results, comparison tables
 - responsibilities: cnn vs svm comparison, cross-channel (speech<->song), error analysis
 
-### configuration (`src/config/settings.py`)
+### configuration (`src/config/config.py`)
 - central location for hyperparameters, paths, feature dimensions
-- all notebooks import from here (once populated)
+- all notebooks import from here
 
-### shared utilities (`src/utils/helpers.py`)
-- common functions: data loading, label parsing from filename, visualization helpers
-- all notebooks import from here (once populated)
+### shared utilities (`src/utils/data_acquisition.py`, `src/utils/data_preprocessing.py`, `src/utils/feature_engineering.py`)
+- common functions: data loading, label parsing from filename, feature extraction
+- all notebooks import from here
 
 ## data flow
 
@@ -82,20 +82,18 @@ data/{train,val,test}/{speech,song}/  -->  data/processed/  -->  data/models/  -
 ## cnn architecture (specific)
 
 ```
-input: (batch, time_frames=282, n_mels=128)
+input: (batch, n_mels=128, time_frames=251)
   |
-conv1d(128->64, k=5, padding=same) -> batchnorm -> relu -> maxpool(2) -> dropout(0.25)
+conv1d(128->64, k=5, padding=2) -> batchnorm -> relu -> maxpool(2)
   |
-conv1d(64->128, k=5, padding=same) -> batchnorm -> relu -> maxpool(2) -> dropout(0.25)
+conv1d(64->128, k=5, padding=2) -> batchnorm -> relu -> maxpool(2)
   |
-conv1d(128->256, k=3, padding=same) -> batchnorm -> relu -> maxpool(2) -> dropout(0.25)
+conv1d(128->128, k=3, padding=1) -> batchnorm -> relu -> adaptiveavgpool(1)
   |
-global avg pooling (1d) -> fc(256->128) -> relu -> dropout(0.5)
-  |
-fc(128->n_classes)  # 8 for speech/combined, 6 for song-only
+dropout(0.3) -> linear(128, n_classes)
 ```
 
-~200k parameters, ~1mb model size.
+~133k parameters, <600 kb on disk.
 
 ## failure points
 

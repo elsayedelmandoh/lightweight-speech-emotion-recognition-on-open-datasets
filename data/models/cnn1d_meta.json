@@ -1,0 +1,31 @@
+{
+  "model": "LightweightCNN1D",
+  "n_mels": 128,
+  "time_frames": 251,
+  "num_classes": 6,
+  "dropout": 0.3,
+  "parameters": 132806,
+  "model_size_kb_disk": 529.3017578125,
+  "spec_augment": {
+    "time_mask_max": 30,
+    "freq_mask_max": 12,
+    "n_time": 2,
+    "n_freq": 2
+  },
+  "training": {
+    "epochs_run": 80,
+    "best_val_acc": 0.7537878787878788,
+    "best_val_loss": 0.8948720964518461,
+    "batch_size": 32,
+    "lr": 0.001,
+    "weight_decay": 0.0005,
+    "label_smoothing": 0.05,
+    "optimizer": "AdamW",
+    "scheduler": "OneCycleLR"
+  },
+  "cpu_inference_ms": {
+    "mean": 0.6369759992230684,
+    "p50": 0.6564500072272494,
+    "p99": 1.0274679918074976
+  }
+}

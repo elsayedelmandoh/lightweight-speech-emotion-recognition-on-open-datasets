@@ -1,0 +1,110 @@
+{
+  "model": "mfcc_svm",
+  "split": "test",
+  "n_samples": 176,
+  "accuracy": 0.7045454545454546,
+  "per_class": {
+    "neutral": {
+      "support": 16,
+      "correct": 8,
+      "acc": 0.5
+    },
+    "calm": {
+      "support": 32,
+      "correct": 26,
+      "acc": 0.8125
+    },
+    "happy": {
+      "support": 32,
+      "correct": 20,
+      "acc": 0.625
+    },
+    "sad": {
+      "support": 32,
+      "correct": 20,
+      "acc": 0.625
+    },
+    "angry": {
+      "support": 32,
+      "correct": 21,
+      "acc": 0.6562
+    },
+    "fearful": {
+      "support": 32,
+      "correct": 29,
+      "acc": 0.9062
+    }
+  },
+  "confusion_matrix": [
+    [
+      8,
+      2,
+      1,
+      2,
+      2,
+      1
+    ],
+    [
+      0,
+      26,
+      4,
+      1,
+      1,
+      0
+    ],
+    [
+      1,
+      1,
+      20,
+      0,
+      0,
+      10
+    ],
+    [
+      2,
+      2,
+      0,
+      20,
+      7,
+      1
+    ],
+    [
+      1,
+      0,
+      5,
+      1,
+      21,
+      4
+    ],
+    [
+      2,
+      0,
+      1,
+      0,
+      0,
+      29
+    ]
+  ],
+  "emotion_names": [
+    "neutral",
+    "calm",
+    "happy",
+    "sad",
+    "angry",
+    "fearful"
+  ],
+  "kernel": "rbf",
+  "C": 1.0,
+  "speakers": [
+    23,
+    24
+  ],
+  "cpu_latency": {
+    "mean_ms": 0.19512799917720258,
+    "std_ms": 0.03881318223262377,
+    "p50_ms": 0.18035000539384782,
+    "p99_ms": 0.33113398938439786,
+    "n_runs": 50,
+    "device": "cpu"
+  }
+}

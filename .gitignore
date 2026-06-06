@@ -1,4 +1,4 @@
-# environment
+# environment and secrets
 .env
 .venv/
 venv/
@@ -8,27 +8,32 @@ __pycache__/
 *.pyc
 *.pyo
 dist/
+build/
 *.egg-info/
 
 # IDE
 .vscode/
 .idea/
 
-# data and logs
-archive.zip
+# data (raw + splits, keep models/predictions tracked)
+data/archive.zip
 data/raw/
+data/samples/
 data/train/
 data/val/
 data/test/
-data/samples/train/
-data/samples/val/
-data/samples/test/
+data/processed/
+
+# logs and runtime
 *.log
-.sisyphus
 
 # docs and internal files
 docs/00-internal/
 
-# tools
-opencode.json
-AGENTS.md
+# jupyter
+.ipynb_checkpoints/
+
+# testing
+.pytest_cache/
+.coverage
+htmlcov/
