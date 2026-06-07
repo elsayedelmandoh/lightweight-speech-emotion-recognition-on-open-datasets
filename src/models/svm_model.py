@@ -12,8 +12,6 @@ public api:
     cpu_inference_latency_svm  - per-sample cpu latency benchmark
 """
 
-from __future__ import annotations
-
 import time
 from pathlib import Path
 from typing import Optional, Tuple

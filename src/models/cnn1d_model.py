@@ -22,6 +22,7 @@ public api:
 
 from __future__ import annotations
 
+import os
 import time
 from pathlib import Path
 from typing import Optional, Tuple
@@ -233,6 +234,9 @@ def train_cnn(
 
     torch.manual_seed(settings.SEED)
     np.random.seed(settings.SEED)
+    os.environ.setdefault("PYTHONHASHSEED", str(settings.SEED))
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
     train_dataset = MelSpectrogramDataset(X_train, y_train, augment=True)
     val_dataset   = MelSpectrogramDataset(X_val,   y_val,   augment=False)

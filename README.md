@@ -37,7 +37,7 @@ secondary: tripathi et al., "deep neural networks for emotion recognition in spe
 - **cpu-optimized**: per-sample inference < 1 ms on a modern laptop cpu.
 - **speaker-disjoint split**: actors 1-19 train, 20-22 val, 23-24 test, ensures cross-speaker generalization is measured.
 - **two pipelines in one repo**: classical mfcc + svm baseline and 1d cnn on mel, side-by-side in 08.
-- **reproducible**: fixed splits, seeded training, all hyperparameters in `src/config/config.py`.
+- **reproducible**: fixed splits, seed=42 (via `src/config/config.py` SEED), all hyperparameters in `src/config/config.py`.
 - **augmentation**: optional specaugment (time and frequency masking) for cnn training.
 
 
