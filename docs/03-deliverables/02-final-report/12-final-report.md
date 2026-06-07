@@ -14,14 +14,14 @@
       School of Computing<br>
       Queen's University<br>
       Kingston, Canada<br>
-      xx@queensu.ca
+      25nrlx@queensu.ca
     </td>
     <td style="border: none; text-align: center; vertical-align: top;">
       <strong>Salma Essam</strong><br>
       School of Computing<br>
       Queen's University<br>
       Kingston, Canada<br>
-      xx@queensu.ca
+      25cdkg@queensu.ca
     </td>
   </tr>
 </table>
