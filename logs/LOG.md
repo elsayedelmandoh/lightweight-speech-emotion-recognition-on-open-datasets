@@ -120,10 +120,18 @@
 - Added reference paper: "Speech Emotion Recognition Based on Multiple Acoustic Features" (full text + PDF).
 - Removed the deprecated `data_acquistion.py` utility (moved logic into notebook pipeline).
 
-**June 7 — EDA & preprocessing notebooks completed:**
-- **Salma** completed full **EDA notebook** (`02-eda.ipynb`): generated 7 figures — emotion distribution, gender distribution, intensity distribution, speech-vs-song comparison, waveform comparisons, spectrogram analysis, and emotion-class spectrograms.
-- Created **`src/utils/eda.py`** (15 lines) and **`src/utils/data_preprocessing.py`** (115 lines) for audio trimming/normalization/padding.
-- **Khaled** uploaded final versions of model notebooks (training, evaluation, testing) and preprocessing notebook.
+**June 7 — Salma completed EDA & data preprocessing:**
+- Completed full **EDA notebook** (`02-eda.ipynb`, +499 lines) with class distribution, gender, intensity, speech-vs-song analysis, waveform comparisons, and emotion-class spectrogram visualizations.
+- Completed **data preprocessing notebook** (`03-data-preprocessing.ipynb`, +538 lines) for audio trimming, silence removal, amplitude normalization, and padding.
+- Created **`src/utils/eda.py`** (15 lines) — reusable EDA plotting utilities.
+- Created **`src/utils/data_preprocessing.py`** (115 lines) — audio trimming, normalization, and padding functions.
+- Generated **7 figures** saved to `docs/02-results/figures/`: emotion distribution, gender distribution, intensity distribution, speech vs. song, spectrogram analysis, waveform comparison, and multi-emotion spectrograms.
+- **Khaled** contributed:
+  - Rewrote **data acquisition notebook** (`01-data-acquisition.ipynb`, +951 lines) with full download and speaker-disjoint split logic.
+  - Completed **feature engineering notebook** (`04-feature-engineering.ipynb`, +819 lines) for mel spectrogram and MFCC feature extraction.
+  - Created `src/utils/data_acquisition.py` (88 lines) and updated `src/utils/feature_engineering.py` (+210 lines) with reusable extraction functions.
+  - Generated `split_labels.csv` with per-file label mappings for the full dataset.
+  - Added 2 figures: `fig04-data_augmentation.png` and `fig04-mel_spectrogram.png`.
 - Multiple refinement iterations on notebooks and documentation.
 
 ### Results Achieved
