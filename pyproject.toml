@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lightweight-speech-emotion-recognition"
+name = "lightweight speech emotion recognition on open datasets"
 version = "0.1.0"
-description = "lightweight speech emotion recognition on open datasets"
+description = "cisc-867 deep learning course project. 6-class speech emotion recognition on ravdess comparing a lightweight 1d cnn on log-mel-spectrograms (~150k params, cpu inference) vs. mfcc + svm baseline. speaker-disjoint evaluation"
 readme = "README.md"
 requires-python = ">=3.12"
 license = {text = "MIT"}
@@ -21,7 +21,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Data Science :: Artificial Intelligence",
 ]
 
 [project.optional-dependencies]
@@ -35,8 +35,7 @@ notebooks = [
 ]
 
 [project.urls]
-homepage = "https://github.com/elsayedelmandoh/lightweight-speech-emotion-recognition"
-repository = "https://github.com/elsayedelmandoh/lightweight-speech-emotion-recognition"
+repository = "https://github.com/elsayedelmandoh/lightweight-speech-emotion-recognition-on-open-datasets"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
