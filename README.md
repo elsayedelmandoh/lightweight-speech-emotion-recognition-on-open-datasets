@@ -1,10 +1,17 @@
 # lightweight speech emotion recognition on open datasets
 
-cisc-867 deep learning course project. speech emotion recognition (ser) on ravdess using a lightweight 1d cnn on log-mel-spectrograms, compared against a classical mfcc + svm baseline. optimized for cpu inference and cross-speaker generalization.
+[![github](https://img.shields.io/badge/GitHub-repo-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/elsayedelmandoh/lightweight-speech-emotion-recognition-on-open-datasets)
+[![linkedin](https://img.shields.io/badge/elsayed-linkedin-0077b5?style=for-the-badge&logo=linkedin&logocolor=white)](https://www.linkedin.com/in/elsayed-elmandoh)
+[![linkedin](https://img.shields.io/badge/khaled-linkedin-0077b5?style=for-the-badge&logo=linkedin&logocolor=white)](https://www.linkedin.com/in/khaled-ahmed202/)
+[![linkedin](https://img.shields.io/badge/salma-linkedin-0077b5?style=for-the-badge&logo=linkedin&logocolor=white)](https://www.linkedin.com/in/salma-essam-atya/)
+[![linkedin-post](https://img.shields.io/badge/linkedin%20post-0077b5?style=for-the-badge&logo=linkedin&logocolor=white)]()
+[![twitter](https://img.shields.io/badge/x-1da1f2?style=for-the-badge&logo=x&logocolor=white)](https://x.com/aangpy)
 
-reference: neumann & vu, "attentive convolutional neural network based speech emotion recognition: a study on the impact of input features, signal length, and acted speech," interspeech 2017. https://arxiv.org/abs/1706.00612
 
-secondary: tripathi et al., "deep neural networks for emotion recognition in speech," ijenn 2019. https://doi.org/10.1109/IJCNN.2019.8852153
+<figure align="center">
+  <img src="docs/02-results/figures/fig05-cnn1d_training_curves.png" alt="cnn training curves" width="80%">
+  <figcaption>cnn training/validation accuracy and loss over 80 epochs. early stopping triggered at epoch 67</figcaption>
+</figure>
 
 
 ## table of contents
@@ -23,6 +30,8 @@ secondary: tripathi et al., "deep neural networks for emotion recognition in spe
 
 
 ## overview
+
+cisc-867 deep learning course project. speech emotion recognition (ser) on ravdess using a lightweight 1d cnn on log-mel-spectrograms, compared against a classical mfcc + svm baseline. optimized for cpu inference and cross-speaker generalization.
 
 - **problem**: classify 6 shared acted emotions (neutral, calm, happy, sad, angry, fearful) from short (~4s) speech clips with a model small enough to run on a cpu laptop.
 - **dataset**: ravdess (ryerson audio-visual database of emotional speech and song). 24 actors, 6 shared emotions (speech + song channels), 1628 train / 264 val / 176 test (speaker-disjoint: actors 1-19 / 20-22 / 23-24). 384 speech files for disgust/surprised dropped for 6-class compatibility.
