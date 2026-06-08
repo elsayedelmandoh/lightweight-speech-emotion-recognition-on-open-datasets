@@ -161,7 +161,7 @@ conda install pip -y
 pip install -r requirements.txt
 
 # environment variables
-cp .env.example .env   # edit if needed
+cp .env.example .env   
 ```
 
 
