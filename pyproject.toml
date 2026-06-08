@@ -3,11 +3,40 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "base-product"
+name = "lightweight-speech-emotion-recognition"
 version = "0.1.0"
-description = "starter template for turning a project idea into a python product"
+description = "lightweight speech emotion recognition on open datasets"
 readme = "README.md"
 requires-python = ">=3.12"
+license = {text = "MIT"}
+keywords = ["speech-emotion-recognition", "ravdess", "audio-classification", "cnn", "svm", "deep-learning"]
+authors = [
+    {name = "elsayed elmandoh"},
+    {name = "khaled ashoush"},
+    {name = "salma essam"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0",
+    "pytest-shutil>=1.8",
+]
+notebooks = [
+    "jupyter>=1.0",
+    "ipykernel>=6.0",
+]
+
+[project.urls]
+homepage = "https://github.com/elsayedelmandoh/lightweight-speech-emotion-recognition"
+repository = "https://github.com/elsayedelmandoh/lightweight-speech-emotion-recognition"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

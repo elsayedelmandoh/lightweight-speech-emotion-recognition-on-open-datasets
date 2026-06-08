@@ -2,7 +2,7 @@
 
 from pathlib import Path
 import pandas as pd
-from src.config.config import EMOTION_MAP, SPLIT_THRESHOLDS
+from src.config.config import settings
 
 
 def count_wavs(dirpath):
@@ -38,7 +38,7 @@ def parse_filename(filepath):
         "filepath": str(filepath),
         "channel": "speech" if channel == 1 else "song",
         "emotion_code": emotion,
-        "emotion": EMOTION_MAP.get(emotion, "unknown"),
+        "emotion": settings.EMOTION_MAP.get(emotion, "unknown"),
         "intensity": "normal" if intensity == 1 else "strong",
         "statement": statement,
         "repetition": rep,
@@ -78,8 +78,11 @@ def assign_split(actor):
     returns:
         str - "train", "val", or "test".
     """
-    if actor <= SPLIT_THRESHOLDS["train"]:
+    if actor <= settings.SPLIT_THRESHOLDS["train"]:
         return "train"
-    elif actor <= SPLIT_THRESHOLDS["val"]:
+    elif actor <= settings.SPLIT_THRESHOLDS["val"]:
         return "val"
     return "test"
+
+def _get_dest(row):
+    return str(settings.DATA_DIR / row["split"] / row["channel"] / f"Actor_{row['actor']:02d}" / Path(row["filepath"]).name)

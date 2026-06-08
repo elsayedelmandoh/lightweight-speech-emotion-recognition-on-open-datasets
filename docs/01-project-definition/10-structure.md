@@ -11,9 +11,12 @@ lightweight-speech-emotion-recognition-on-open-datasets/
 ├── .gitignore              # fully commented out - nothing ignored!
 ├── src/
 │   ├── config/
-│   │   └── settings.py     # typed settings, paths, hyperparameters (populated)
+│   │   └── config.py       # typed settings, paths, hyperparameters (populated)
 │   └── utils/
-│       └── helpers.py      # shared helpers: parse_filename, collect_wavs, count_wavs, etc. (populated)
+│       ├── data_acquisition.py     # data loading, filename parsing, split assignment
+│       ├── data_preprocessing.py   # audio preprocessing
+│       ├── eda.py                  # exploratory data analysis helpers
+│       └── feature_engineering.py  # mel/mfcc feature extraction
 ├── notebooks/
 │   ├── 00-quickstart.ipynb
 │   ├── 01-data-acquisition/
@@ -91,8 +94,8 @@ lightweight-speech-emotion-recognition-on-open-datasets/
 ## directory responsibilities
 
 - `app.py`: entrypoint for local startup. currently non-functional due to broken imports.
-- `src/config/`: runtime configuration, paths, hyperparameters in `settings.py`.
-- `src/utils/`: shared functions (parse_filename, collect_wavs, count_wavs, assign_split, extract_mfcc). notebooks import from here.
+- `src/config/`: runtime configuration, paths, hyperparameters in `config.py`.
+- `src/utils/`: shared functions: `data_acquisition.py` (parse_filename, collect_wavs, assign_split), `data_preprocessing.py` (preprocess_audio, save_split), `feature_engineering.py` (extract_logmel, extract_mfcc_vector), `eda.py` (load_labels). notebooks import from here.
 - `src/models/`: model class definitions (empty - refactoring planned from notebooks).
 - `notebooks/00-preliminary-experiments/`: full pipeline on a 416-file sample subset. each notebook is self-contained and runs in minutes.
 - `notebooks/01-07`: full-scale pipeline directories (stubs, awaiting population).
@@ -106,8 +109,10 @@ lightweight-speech-emotion-recognition-on-open-datasets/
 ## import convention
 
 ```python
-from src.config.settings import *
-from src.utils.helpers import *
+from src.config.config import settings
+from src.utils.data_acquisition import parse_filename, collect_wavs, assign_split
+from src.utils.data_preprocessing import preprocess_audio, build_split_dataframe
+from src.utils.feature_engineering import extract_logmel, extract_mfcc_vector
 ```
 
-`settings.py` and `helpers.py` are populated with paths, constants, and reusable functions.
+the actual import convention varies by notebook: notebooks import specific functions from the relevant utils modules. the `settings` singleton from `src.config.config` is the canonical path. there is no `helpers.py` or `settings.py` -- they were split into purpose-specific files during refactoring.
