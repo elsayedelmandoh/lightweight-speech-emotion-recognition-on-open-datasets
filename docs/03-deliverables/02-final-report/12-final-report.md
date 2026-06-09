@@ -1,5 +1,7 @@
 # lightweight speech emotion recognition on open datasets: a 1d cnn vs mfcc-svm comparison
 
+On the Surprising Effectiveness of a Classical SVM Baseline Over a Lightweight 1D CNN for Small-Corpus Cross-Speaker SER
+
 <table border="0" cellspacing="0" cellpadding="4" style="border: none; margin: 0 auto; font-size: 0.70em;">
   <tr style="border: none;">
     <td style="border: none; text-align: center; vertical-align: top;">
