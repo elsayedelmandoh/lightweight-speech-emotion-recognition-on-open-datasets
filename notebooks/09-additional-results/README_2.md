@@ -87,15 +87,3 @@ Total Speakers:
 | Sad | 5 |
 
 ---
-
-## Audio Preprocessing
-
-A unified preprocessing pipeline is applied to all files:
-
-```text
-Load
-→ Mono
-→ Resample
-→ Silence Trimming
-→ RMS Normalization
-→ Pad / Truncate
