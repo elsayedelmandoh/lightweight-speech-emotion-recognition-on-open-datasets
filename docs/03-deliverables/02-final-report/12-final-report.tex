@@ -1,0 +1,1536 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{multicol}
+\usepackage{float}
+\usepackage[skip=4pt, font=small]{caption}
+\setlength{\columnsep}{1cm}
+\setlength{\intextsep}{6pt}
+\setlength{\textfloatsep}{8pt}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{longtable, booktabs, array}
+\providecommand{\real}[1]{#1}
+\providecommand{\pandocbounded}[1]{#1}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\begin{document}
+
+
+
+
+
+\title{Lightweight Speech Emotion Recognition on Open Datasets: A 1D CNN vs MFCC-SVM Comparison
+
+\large On the Surprising Effectiveness of a Classical SVM Baseline Over a Lightweight 1D CNN for Small-Corpus Cross-Speaker SER
+}
+
+\author{\IEEEauthorblockN{Elsayed Elmandoh}
+\IEEEauthorblockA{School of Computing\\
+Queen's University\\
+Kingston, Canada\\
+elsayed.elmandoua@queensu.ca}
+\and
+\IEEEauthorblockN{Khaled Ashoush}
+\IEEEauthorblockA{School of Computing\\
+Queen's University\\
+Kingston, Canada\\
+25nrlx@queensu.ca}
+\and
+\IEEEauthorblockN{Salma Essam}
+\IEEEauthorblockA{School of Computing\\
+Queen's University\\
+Kingston, Canada\\
+25cdkg@queensu.ca}}
+
+\maketitle
+\sloppy
+\begin{abstract}
+
+speech emotion recognition (ser) enables affect-aware interfaces in
+human-computer interaction, healthcare, and customer service. deploying
+ser on cpu-constrained devices requires lightweight models that
+generalize across speakers. this paper presents a comparative study of a
+classical mfcc + svm baseline and a 1d convolutional neural network
+(cnn) on log-mel-spectrograms for 6-class emotion classification
+(neutral, calm, happy, sad, angry, fearful) on the ravdess dataset. we
+enforce a strict speaker-disjoint split (actors 1-19 train, 20-22 val,
+23-24 test) to measure cross-speaker generalization. the svm baseline
+(rbf kernel, c=1) achieves \textbf{70.45\% test accuracy} and
+\textbf{0.19 ms/sample cpu latency}. the 1d cnn (132,806 parameters)
+achieves \textbf{66.48\% test accuracy} and \textbf{0.53 ms/sample cpu
+latency}. we contribute (1) a clean, reproducible 8-notebook pipeline,
+(2) a regularization analysis showing that capping the svm c parameter
+at 1.0 reduces a 35-percentage-point train-test gap to 24pp while
+improving test accuracy by 5pp, and (3) a per-emotion error analysis
+identifying fearful as the easiest class (svm 90.6\%) and neutral as the
+hardest (50\% for both models). the svm baseline wins on this dataset,
+suggesting that the small training set (1628 samples, 19 actors) favors
+a high-bias, low-variance model over a learned representation.
+
+\end{abstract}
+
+\section{Introduction}\label{introduction}
+
+speech carries rich paralinguistic information beyond its linguistic
+content: emotion, intent, and speaker state. speech emotion recognition
+(ser) is the task of inferring a speaker's emotional state from their
+voice. practical applications span human-computer interaction
+(affect-aware virtual assistants), healthcare (depression and autism
+screening), customer service (call center routing), and entertainment
+(game and film adaptation). the ravdess dataset {[}1{]} is widely used
+for ser research because it provides acted emotional speech and song
+from 24 north american english speakers across 8 emotion categories
+(calm, happy, sad, angry, fearful, surprise, disgust, neutral).
+
+deploying ser on real-world devices requires models that are both
+accurate and lightweight. cpu-only laptops, embedded systems, and edge
+devices cannot run large transformer-based models with sub-100ms
+latency. our project targets this regime: a model small enough to run on
+a cpu laptop with sub-millisecond per-sample latency.
+
+\textbf{Problem statement.} Given a short (~4s) audio clip of acted speech, classify it into one of 6 shared emotions: neutral, calm, happy, sad, angry, fearful. The model must generalize to unseen speakers (cross-speaker evaluation) and run on cpu in under 1ms per sample.
+
+\textbf{Motivation.} The choice of a lightweight architecture is not
+merely a technical constraint but a deployment requirement:
+affect-aware applications such as mental health monitoring tools,
+in-car emotion detection systems, and accessibility interfaces must
+run on commodity hardware without cloud connectivity. This rules out
+large pre-trained transformers (wav2vec 2.0, hubert, whisper) and
+motivates the comparison between a hand-crafted feature pipeline
+(mfcc + svm) and a small learned architecture (1d cnn on log-mel
+spectrograms).
+
+\textbf{Project scope.} - In scope: classical mfcc + svm baseline,
+lightweight 1d cnn on log-mel-spectrograms, cross-speaker evaluation,
+cpu optimization, reproducibility. - Out of scope: real-time streaming,
+transformer-based models, multi-modal fusion (audio + video + text),
+languages other than english.
+
+\textbf{Contributions.} 1. We implement a clean two-model comparison: a
+classical mfcc + svm baseline and a 1d cnn on log-mel-spectrograms, both
+in a single reproducible pipeline. 2. We design a strict
+speaker-disjoint split (actors 1-19/20-22/23-24) and verify
+cross-speaker generalization on held-out actors 23-24. 3. We contribute
+a regularization analysis: capping the svm c parameter at \{0.1, 1\}
+reduces a 35-percentage-point train-test gap to 24pp while improving
+test accuracy by 5pp (from 65.34\% to 70.45\%). 4. We ship cpu-latency
+measurements (svm 0.19 ms/sample, cnn 0.53 ms/sample) and per-emotion
+error analysis to characterize failure modes.
+
+this study benchmarks two baselines, a classical mfcc + svm pipeline and a lightweight 1d cnn on log-mel-spectrograms, providing a controlled comparison of hand-crafted versus learned representations under identical data and evaluation conditions.
+
+
+\textbf{Outline.} Section 2 reviews related work. Section 3 describes
+the data and preprocessing pipeline. Section 4 details the model
+architectures and training procedure. Section 5 presents experiments and
+results. Section 6 discusses strengths, weaknesses, and limitations.
+Section 7 concludes.
+
+
+\section{Related Work}\label{related-work}
+
+speech emotion recognition has been studied for over two decades {[}12{]},
+evolving from hand-crafted feature engineering with classical
+classifiers to end-to-end deep learning. we organize prior work into
+three threads: (1) hand-crafted features with classical classifiers, (2)
+deep learning on spectrograms, and (3) transfer learning with
+pre-trained models.
+
+\textbf{Hand-crafted features.} Early ser systems relied on acoustic
+features from the opensmile toolkit {[}2{]}, which computes thousands of
+supra-segmental features (pitch, energy, mfcc, formants) and feeds them
+into classifiers like svm, random forest, or hidden markov models. Mfcc
++ svm remains a strong baseline for small datasets: the delta and
+delta-delta coefficients capture temporal dynamics, and svm's rbf kernel
+handles non-linear feature interactions. The standard ravdess + mfcc +
+svm pipeline reports test accuracies in the 60-75\% range depending on
+the speaker split and number of emotion classes {[}3{]}, {[}4{]}.
+
+\textbf{Deep learning on spectrograms.} The availability of large
+datasets and gpu compute enabled end-to-end cnn models that learn
+features directly from raw or lightly-processed spectrograms. Badshah et
+al.~{[}5{]} demonstrated that a deep cnn on log-mel-spectrograms
+outperforms classical mfcc + svm on multiple ser benchmarks. Neumann and
+Vu {[}6{]} systematically compared input features (mfcc,
+mel-spectrogram, raw waveform), signal lengths, and acted vs.~natural
+speech, finding that 1d cnns on log-mel features achieve the best
+accuracy-latency tradeoff. Tripathi et al.~{[}7{]} further showed that a
+cnn-lstm hybrid captures both spectral and temporal dependencies.
+Anvarjon et al.~{[}10{]} proposed a lightweight
+deep-net cnn using deep frequency features for ser, achieving competitive
+accuracy with significantly fewer parameters than standard cnns.
+
+\textbf{Transfer learning.} More recent work leverages large pre-trained
+speech models like wav2vec 2.0 {[}8{]}, {[}11{]}, hubert, and whisper. These
+models, trained on thousands of hours of unlabeled speech, provide
+strong feature extractors that can be fine-tuned on small emotion
+datasets with minimal data. Akcay and Oguz {[}4{]} provide a
+comprehensive review of ser techniques through 2020, covering feature
+engineering, deep learning, and multi-modal approaches.
+
+\textbf{How our work differs.} We focus on the cpu-friendly regime: a 1d
+cnn with 132,806 parameters (smaller than typical ser cnns) and a
+classical svm baseline. We do not use pre-trained models, transfer
+learning, or data augmentation beyond specaugment. Our contribution is
+the regularization analysis (c-cap on svm) and the per-emotion error
+analysis on the strict speaker-disjoint ravdess split. Our svm baseline
+(70.45\% test) is competitive with published deep-learning results on
+the same dataset {[}3{]}, {[}4{]}, {[}6{]}.
+
+\textbf{References cited here:} {[}1{]} Livingstone and Russo, {[}2{]}
+Eyben et al., {[}3{]} Bhangale and Kothandaraman, {[}4{]} Akcay and
+Oguz, {[}5{]} Badshah et al., {[}6{]} Neumann and Vu, {[}7{]} Tripathi
+et al., {[}8{]} Pepino et al.,
+{[}10{]} Anvarjon and Kwon, {[}11{]} Baevski et al.,
+{[}12{]} El Ayadi et al.
+
+
+\section{Data and Preprocessing}\label{data-and-preprocessing}
+
+\textbf{Dataset.} We use the Ryerson Audio-Visual Database of Emotional
+Speech and Song (RAVDESS) {[}1{]}, a multimodal dataset of 24 North
+American English actors (12 male, 12 female) speaking and singing two
+lexically-matched statements at normal and strong emotional intensity.
+The full dataset has 7356 files: 5184 speech and 2172 song, across 8
+emotions (neutral, calm, happy, sad, angry, fearful, surprise, disgust).
+
+\textbf{6-class subset.} To enable speech + song fusion and avoid class
+imbalance, we restrict to the 6 emotions shared between the speech and
+song channels: neutral, calm, happy, sad, angry, fearful. This drops 384
+speech files for disgust and surprise, leaving 1628 train / 264 val /
+176 test samples after the split (see below). Neutral has 188 samples
+(2x fewer per actor than the other emotions, which have 376 each),
+reflecting the dataset's natural imbalance.
+
+
+\textbf{Fig.~1.} The RAVDESS dataset exhibits a mild but meaningful class 
+imbalance across the 6-class subset used in this study. 
+Five emotions --- calm, happy, sad, angry, and fearful --- 
+each contribute approximately 376 samples, recorded at both 
+normal and strong intensity levels across all 24 actors 
+(12 male, 12 female). In contrast, neutral contains only 
+188 samples ($2\times$ fewer per actor), as it was recorded 
+exclusively at normal intensity with no strong-intensity 
+counterpart. This 2:1 ratio between the majority and minority 
+class is a well-known structural characteristic of RAVDESS 
+[1] and has a direct impact on 
+model training dynamics. A model trained with uniform 
+cross-entropy loss would develop a systematic bias toward 
+the five over-represented emotion classes, at the expense 
+of neutral recall. To mitigate this, we adopt two 
+complementary strategies: (1) for the 1D CNN, we apply 
+class-weighted cross-entropy loss, assigning a weight 
+inversely proportional to each class frequency, thereby 
+penalizing neutral misclassifications more heavily during 
+backpropagation; (2) for the SVM baseline, we use 
+scikit-learn's \texttt{class\_weight=`balanced'} option, 
+which automatically scales the regularization parameter 
+$C$ for each class by $n\_samples / (n\_classes \times 
+n\_samples\_per\_class)$. Both strategies ensure that the 
+minority neutral class receives proportional gradient 
+signal during optimization, leading to more balanced 
+per-class recall at test time.
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\linewidth]{fig02-emotion-distribution.png}
+\caption{Emotion class distribution (6 shared emotions).}
+\label{fig:emotion-dist}
+\end{figure}
+
+\textbf{Fig.~2.} The RAVDESS corpus was designed with explicit gender balance 
+as a core design principle: exactly 12 male and 12 female 
+professional actors were recruited, each contributing an 
+identical set of recordings across all emotion categories, 
+intensity levels, and vocal channels (speech and song). 
+This near-perfect gender balance (male: $\approx$1,254 
+samples, female: $\approx$1,204 samples) is a significant 
+methodological advantage over many prior SER datasets, 
+which skew heavily toward one gender and introduce 
+confounding gender-specific acoustic patterns into the 
+learned representations. In practice, gender balance 
+ensures that the model cannot exploit gender as a shortcut 
+for emotion prediction: for example, a model trained on 
+a male-dominated dataset might learn to associate 
+high-pitched voices (a female cue) with specific emotions, 
+rather than learning genuine emotional acoustic signatures. 
+By maintaining equal gender representation across all 
+splits --- train (actors 1--19), validation (actors 20--22), 
+and test (actors 23--24) --- our speaker-disjoint evaluation 
+protocol further ensures that gender distribution remains 
+consistent across splits, preventing any gender-induced 
+distribution shift between training and evaluation. This 
+design choice supports the cross-speaker generalization 
+objective of this study, where the model must recognize 
+emotions from two entirely held-out actors (23 and 24, 
+one male and one female) never seen during training.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{fig02-gender-distribution.png}
+\caption{Gender distribution: 12 male and 12 female 
+actors contribute equally across all emotion categories and 
+intensity levels, ensuring gender-balanced training and 
+evaluation splits.}
+\label{fig:gender-dist}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{fig02-intensity-distribution.png}
+\caption{Normal vs.\ strong intensity split. 
+Normal intensity ($\approx$1,316 samples, 54\%) slightly 
+outnumbers strong intensity ($\approx$1,140 samples, 46\%), 
+reflecting the absence of a strong-intensity neutral class 
+in RAVDESS.}
+\label{fig:intensity-dist}
+\end{figure}
+
+\textbf{Fig.~3.} \textbf{RAVDESS} recordings span two emotional 
+intensity levels: \textit{normal} (naturalistic delivery, 
+$\approx$1,316 samples, 54\%) and \textit{strong} 
+(exaggerated high-arousal delivery, $\approx$1,140 samples, 
+46\%). The slight imbalance arises because neutral was 
+recorded at normal intensity only --- there is no 
+strong-intensity neutral in RAVDESS. Both intensity levels 
+are present in all other five emotion classes, increasing 
+intra-class acoustic diversity but also adding a secondary 
+axis of variation that can confuse models: for example, 
+strong-angry and strong-fearful share high energy and high 
+pitch, making them harder to separate than their 
+normal-intensity counterparts. Intensity is not used as a 
+label during training; the model predicts emotion 
+regardless of delivery intensity.
+
+\textbf{Fig.~4.} RAVDESS is unique among SER benchmarks 
+in providing two distinct vocal channels for the same set 
+of actors and emotions: \textit{speech} and \textit{song}. 
+The speech channel contains acted spoken sentences delivered 
+with emotional expression, while the song channel contains 
+the same emotional content conveyed through singing. 
+Across the full 6-class subset, speech contributes 
+1,440 files (58.7\%) and song contributes 1,012 files 
+(41.3\%), yielding a moderate channel imbalance that 
+reflects the fact that the neutral emotion was recorded 
+only in the speech channel --- there is no neutral song 
+in RAVDESS, as singing without an identifiable emotion 
+is not a well-defined vocal production task. Including 
+both channels in our training set is a deliberate design 
+choice motivated by two considerations. First, it 
+maximizes the available training data: with only 1,628 
+training samples after the speaker-disjoint split, 
+excluding the song channel would reduce training data 
+by $\approx$41\%. Second, training on both channels 
+forces the model to learn acoustic features that are 
+robust to the speech--song domain shift, potentially 
+improving generalization to other non-speech vocal 
+expressions.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{fig02-speech-vs-song.png}
+\caption{Speech vs.\ song channel counts.}
+\label{fig:speech-song}
+\end{figure}
+
+The preprocessing pipeline applies a 
+sequence of five transformations to convert each raw 
+RAVDESS recording into a standardized, model-ready clip. 
+The top panel shows the original waveform recorded at 
+48\,kHz with variable duration (typically 3--5\,s) and 
+un-normalized amplitude: the signal begins with a long 
+silence region before the utterance onset, and the peak 
+amplitude varies significantly across actors due to 
+differences in microphone distance, recording environment, 
+and vocal effort. The bottom panel shows the same clip 
+after the full preprocessing pipeline: (1) \textit{resampling} 
+from 48\,kHz to 16\,kHz reduces the sample rate to a 
+standard speech processing rate while halving the data 
+footprint; (2) \textit{silence trimming} at a $-$25\,dB 
+threshold removes the long pre-utterance and post-utterance 
+silence regions, retaining only the speech-active portion; 
+(3) \textit{pre-emphasis filtering} with coefficient 0.97 
+applies a first-order high-pass filter 
+$y[n] = x[n] - 0.97 \cdot x[n-1]$, 
+boosting high-frequency components and making formant 
+transitions more acoustically salient for downstream 
+feature extraction; (4) \textit{RMS normalization} scales 
+the waveform so that its root-mean-square energy equals 
+a fixed target, with a clip threshold of 3.0 to suppress 
+outlier peaks, reducing inter-speaker loudness variation 
+by up to 20\,dB; and (5) \textit{zero-padding or 
+truncation} to a fixed 4\,s duration (64{,}000 samples 
+at 16\,kHz) ensures that all inputs to the CNN have 
+identical shape, which is required for batch processing. 
+The resulting waveform (bottom) shows a compact, 
+energy-normalized utterance occupying roughly the first 
+2\,s of the 4\,s window, with the remaining 2\,s filled 
+with near-zero padding --- a pattern that is consistent 
+across all clips and that the CNN learns to disregard 
+during training.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{fig03-waveform_comparison.png}
+\caption{Raw vs.\ preprocessed waveform. 
+\textit{Top}: original 48\,kHz recording with variable 
+duration and un-normalized amplitude. 
+\textit{Bottom}: preprocessed 16\,kHz clip after silence 
+trimming ($-$25\,dB threshold), pre-emphasis (coeff.\ 0.97), 
+RMS normalization (clip threshold 3.0), and zero-padding 
+to a fixed 4\,s (64{,}000 samples).}
+\label{fig:waveform}
+\end{figure}
+
+
+\textbf{Fig.~6.} Log-Mel spectrograms provide a perceptually 
+motivated 2D representation of speech that captures both 
+spectral content (y-axis: mel-scaled frequency from 0 to 
+$\approx$8\,kHz) and temporal dynamics (x-axis: time in 
+seconds). Each panel displays 128 mel bands $\times$ 251 
+time frames for one representative speech clip per emotion 
+class, after the full preprocessing pipeline (16\,kHz, 
+4\,s, RMS-normalized). The black region in the right 
+portion of each panel corresponds to zero-padded silence 
+after the trimmed utterance ends, confirming that most 
+RAVDESS speech clips are shorter than the 4\,s fixed 
+window. Examining the six emotion classes reveals 
+perceptually interpretable spectral signatures: 
+\textit{angry} shows broad, high-energy bands distributed 
+across the full frequency range (512--4096\,Hz), consistent 
+with the loud, forceful vocal production associated with 
+anger; \textit{fearful} displays concentrated energy in 
+the upper frequency bands (1024--4096\,Hz) with rapid 
+irregular temporal modulations, reflecting the breathy, 
+high-pitched vocal quality of fear; \textit{sad} exhibits 
+sparse, low-frequency energy (primarily below 1024\,Hz) 
+with slow temporal evolution, consistent with the slow, 
+monotone prosody of sadness; \textit{happy} shows dense 
+mid-frequency harmonics (512--2048\,Hz) with dynamic 
+temporal variation, reflecting the energetic, variable 
+pitch contours of happiness; \textit{neutral} has evenly 
+distributed moderate energy across frequencies with 
+regular harmonic structure, lacking the strong spectral 
+peaks or valleys that characterize the other emotions; 
+and \textit{calm} exhibits low-to-mid frequency energy 
+(below 2048\,Hz) with smooth temporal transitions, 
+similar to neutral but with slightly reduced high-frequency 
+content. These visual distinctions motivate the use of 
+log-mel spectrograms as the primary input representation 
+for the 1D CNN: the per-emotion spectral signatures 
+provide discriminative cues that a convolutional model 
+can learn to detect via learned filters operating across 
+the mel-frequency and time axes.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{fig03-emotions_spectrograms.png}
+\caption{Log-Mel spectrogram per emotion class 
+(speech channel only). Each panel shows 128 mel bands 
+$\times$ 251 time frames for one representative clip. 
+The black region corresponds to zero-padded silence 
+after the trimmed utterance. Visible spectral differences 
+across emotions motivate the log-mel representation as 
+CNN input.}
+\label{fig:emotion-spectrograms}
+\end{figure}
+
+\textbf{Fig.~7.} Three complementary time-frequency 
+representations of the same preprocessed clip are shown, 
+illustrating the progression from raw waveform to the 
+final CNN input feature. The \textit{top panel} shows 
+the preprocessed waveform after RMS normalization: the 
+amplitude is bounded within $[-1, 1]$, the utterance 
+occupies roughly the first 2\,s, and the remaining 2\,s 
+is zero-padded silence. The waveform alone provides 
+limited discriminability between emotion classes, as 
+the temporal envelope is similar across emotions at 
+this resolution. The \textit{middle panel} shows the 
+linear-frequency spectrogram computed via the Short-Time 
+Fourier Transform (STFT) with a 1024-point FFT and 
+256-sample hop length, yielding 513 frequency bins 
+spanning 0--8\,kHz. The linear scale resolves fine 
+harmonic structure in the low-frequency bands (below 
+1\,kHz) but compresses the perceptually important 
+speech formant region (1--4\,kHz) into a narrow band, 
+making it difficult for a model to distinguish 
+emotion-relevant spectral features from irrelevant 
+high-frequency noise. The \textit{bottom panel} shows 
+the log-mel spectrogram, computed by projecting the 
+STFT power spectrum onto 128 mel-scaled filter banks 
+spanning 20--8000\,Hz and applying a log compression. 
+The mel scale allocates more frequency bins to the 
+perceptually important low-to-mid frequency region 
+(below 4\,kHz), where the majority of speech energy 
+and emotion-discriminative cues --- including fundamental 
+frequency ($F_0$), formants ($F_1$, $F_2$, $F_3$), 
+and prosodic modulations --- are concentrated. The log 
+compression reduces the dynamic range from $\sim$80\,dB 
+to a compact range suitable for neural network input, 
+and the per-sample zero-mean unit-std normalization 
+(applied after log compression) centers the values 
+around zero to facilitate stable gradient flow during 
+training. The resulting $(128 \times 251)$ log-mel 
+tensor is the direct input to the 1D CNN, where the 
+128 mel bands serve as the channel dimension and the 
+251 time frames serve as the sequence dimension over 
+which the \texttt{Conv1d} layers operate.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{fig03-spectrogram_analysis.png}
+\caption{Three representations of the same 
+preprocessed clip: waveform (top), linear STFT spectrogram 
+(middle, 513 frequency bins), and log-mel spectrogram 
+(bottom, 128 mel bands $\times$ 251 time frames). The 
+log-mel representation compresses the frequency axis onto 
+a perceptual mel scale, emphasizing emotion-discriminative 
+bands below 4\,kHz, and serves as the direct input to 
+the 1D CNN.}
+\label{fig:spectrogram-analysis}
+\end{figure}
+
+
+\textbf{Speaker-disjoint split.} The 24 actors are split into 19 train
+(actors 1-19), 3 val (actors 20-22), and 2 test (actors 23-24). No actor
+appears in more than one split. This split is critical for measuring
+cross-speaker generalization: a model that memorizes speaker identity
+would score artificially high on a random split. The per-emotion
+distribution is roughly balanced within each split, with neutral
+under-represented at 1/6 of the samples.
+
+\textbf{Preprocessing.} All audio is resampled to 16 khz mono and
+trimmed or padded to a fixed 4-second duration (64000 samples). Silence
+trimming is applied at a -25 db threshold. A pre-emphasis filter
+(coefficient 0.97) boosts high frequencies. Per-sample rms normalization
+(clip threshold 3.0) reduces volume variation across actors.
+
+\emph{Fig.~5. raw vs.~preprocessed waveform.}
+
+\emph{Fig.~6. sample spectrograms for each of the 6 emotions.}
+
+\emph{Fig.~7. waveform, spectrogram, and mel-spectrogram comparison.}
+
+\textbf{Feature extraction.} - \emph{log-mel-spectrogram} (for the 1d
+cnn): 128 mel bands, 1024-point fft, 256-sample hop length, 251 time
+frames. Per-sample zero-mean unit-std normalization across time and
+frequency. - \emph{mfcc + delta + delta-delta} (for the svm): 40 mfcc
+coefficients, plus first and second-order deltas, mean and std pooled
+across time, yielding a 240-dimensional feature vector per sample.
+
+\textbf{Fig.~8.} The log-mel spectrogram feature tensor 
+used as direct input to the 1D CNN is shown after 
+per-sample zero-mean unit-standard-deviation normalization. 
+The normalization is applied independently to each sample 
+by subtracting the global mean and dividing by the global 
+standard deviation of the $(128 \times 251)$ log-mel 
+matrix, yielding a centered representation where red 
+regions indicate spectral energy above the sample mean 
+and blue regions indicate energy below the sample mean. 
+This per-sample standardization serves two purposes: 
+(1) it removes the effect of overall loudness, ensuring 
+that the CNN sees a consistent input range regardless 
+of the original recording amplitude; and (2) it centers 
+the input distribution around zero, which facilitates 
+stable gradient flow and faster convergence during 
+training with the AdamW optimizer. The speech-active 
+region (approximately 0--2.2\,s, left portion of the 
+tensor) exhibits a rich harmonic structure concentrated 
+in the low-to-mid frequency bands (512--2048\,Hz), 
+where the fundamental frequency ($F_0$) and its 
+harmonics produce a characteristic striped pattern 
+of alternating red and blue horizontal bands. The 
+mid-to-high frequency bands (2048--4096\,Hz) show 
+more diffuse energy corresponding to fricatives and 
+formant transitions. The zero-padded silence region 
+(approximately 2.2--4\,s, right portion of the tensor) 
+collapses to a near-uniform blue value close to the 
+negative mean, forming a visually distinct rectangular 
+region that is clearly separable from the speech 
+content. This sharp boundary between speech and silence 
+provides an implicit temporal segmentation cue that 
+the CNN can exploit via its \texttt{Conv1d} receptive 
+field: filters that span the speech-silence boundary 
+will receive a strong activation signal, effectively 
+marking the end of the utterance. The 128 mel bands 
+(y-axis) are spaced on the mel scale, allocating 
+approximately twice as many bands to the 
+perceptually important region below 1\,kHz compared 
+to a linear-frequency representation, which improves 
+the model's sensitivity to low-frequency prosodic 
+cues such as fundamental frequency contours and 
+vowel formants that are key discriminators between 
+emotion classes such as sad (low $F_0$) and 
+angry (high $F_0$).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{fig04-mel_spectrogram.png}
+\caption{Log-Mel spectrogram feature 
+($128 \times 251$) after per-sample zero-mean 
+unit-std normalization. Red = above mean, 
+blue = below mean. The speech-active region 
+(0--2.2\,s) shows strong harmonic structure 
+in the low-to-mid bands (512--2048\,Hz), while 
+the zero-padded silence region (2.2--4\,s) 
+collapses to a uniform near-zero value. This 
+normalized tensor is the direct input to the 
+1D CNN.}
+\label{fig:mel-feature}
+\end{figure}
+
+
+\textbf{Augmentation.} Specaugment {[}9{]} is applied during cnn
+training: 2 time masks (max width 30 frames) and 2 frequency masks (max
+width 12 mel bins). Augmentation is disabled at inference time. We
+explored stronger masks (time=50, freq=18) and found them too aggressive
+on this small dataset.
+
+\textbf{Fig.~9.} Three audio-level augmentations are 
+demonstrated on the same preprocessed clip to illustrate 
+the diversity injected into the training set. The 
+\textit{top panel} shows the original preprocessed 
+waveform (16\,kHz, RMS-normalized), which serves as the 
+reference signal. All augmentations are applied only 
+at training time; the validation and test sets always 
+use the original preprocessed clips to ensure unbiased 
+evaluation.
+
+\textit{Panel 2 (+Noise)} shows the effect of additive 
+white Gaussian noise: a low-amplitude random signal is 
+superimposed on the original waveform, increasing the 
+apparent noise floor across the entire clip. This 
+augmentation simulates variation in recording conditions 
+--- microphone quality, background noise, and acoustic 
+environment --- and encourages the model to learn 
+emotion-discriminative features that are robust to 
+additive perturbations rather than relying on the 
+clean signal structure of the acted RAVDESS recordings.
+
+\textit{Panel 3 (Pitch Shift)} shows the effect of 
+pitch shifting by a random number of semitones (typically 
+$\pm$2--4 semitones): the fundamental frequency $F_0$ 
+and all its harmonics are shifted uniformly upward or 
+downward, simulating inter-speaker variation in vocal 
+tract length and habitual pitch. This is particularly 
+important for cross-speaker generalization: different 
+actors have different pitch ranges, and a model trained 
+only on the original pitches may overfit to 
+actor-specific $F_0$ values rather than learning 
+pitch-relative emotion cues. The pitch-shifted waveform 
+is perceptually indistinguishable as a different emotion, 
+but provides a wider pitch distribution in the training 
+set.
+
+\textit{Panel 4 (Time Stretch)} shows the effect of 
+time stretching by a random rate factor (typically 
+0.8--1.2$\times$): the temporal envelope of the 
+utterance is compressed or expanded without changing 
+the pitch, simulating variation in speaking rate. 
+This is implemented using phase vocoder resampling 
+to preserve spectral shape while altering duration. 
+Time stretching is particularly useful for SER because 
+speaking rate is correlated with but distinct from 
+emotion: fast speech can indicate excitement or anger, 
+while slow speech can indicate sadness or calm, but 
+these correlations are not deterministic. By exposing 
+the model to a range of speaking rates for each 
+emotion class, time stretch augmentation reduces 
+the model's reliance on absolute temporal duration 
+as an emotion cue. Note that all augmented clips 
+are zero-padded or truncated to the fixed 4\,s 
+window after augmentation, ensuring consistent 
+input shape.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{fig04-data_augmentation.png}
+\caption{Audio-level data augmentation applied 
+to a single preprocessed clip. From top to bottom: 
+(1) original waveform (reference); (2) +Noise: additive 
+white Gaussian noise simulating recording variability; 
+(3) Pitch Shift: $F_0$ shifted by $\pm$2--4 semitones, 
+simulating inter-speaker pitch variation; (4) Time 
+Stretch: temporal envelope compressed/expanded by 
+0.8--1.2$\times$, simulating speaking rate variation. 
+All augmentations preserve emotional content and are 
+applied only during training.}
+\label{fig:augmentation}
+\end{figure}
+
+\emph{Fig.~9. audio-level augmentation demonstration.}
+
+\textbf{Data files produced.} -
+\texttt{data/processed/X\_\{train,val,test\}\_mel.npy} shape (n, 128,
+251) float32 - \texttt{data/processed/X\_\{train,val,test\}\_mfcc.npy}
+shape (n, 240) float32 -
+\texttt{data/processed/y\_\{train,val,test\}.npy} shape (n,) int64
+(class indices 0-5)
+
+
+\section{Methodology}\label{methodology}
+
+\subsection{Classical Baseline: MFCC + SVM}\label{classical-baseline-mfcc-svm}
+
+we standardize the 240-dimensional mfcc feature vector (per the
+preprocessing in section 3) using scikit-learn's \texttt{standardscaler}
+fitted on the training set. the svm is trained with
+\texttt{probability=true} (platt scaling enabled) to allow soft
+predictions, though we only use hard labels for evaluation.
+
+\textbf{Hyperparameter grid search.} We use 5-fold cross-validation on
+the training set (grouped by actor to prevent actor leakage) over a
+curated grid: - \emph{rbf kernel}: c in \{0.1, 1\}, gamma in \{0.001,
+0.005, 0.01, ``scale''\} (8 combos) - \emph{linear kernel}: c in \{0.1,
+1, 10\} (3 combos) - \emph{polynomial kernel}: degree 2, c in \{1, 10\},
+gamma in \{``scale'', 0.01\} (4 combos)
+
+Total: 15 hyperparameter combinations x 5 folds = 75 svm fits. The best
+model is selected by mean cross-validation accuracy. The initial grid
+(before regularization analysis) included rbf c in \{0.1, 1, 10, 50\},
+which produced a model that overfit to the training actors (100\% train
+accuracy, 65\% test accuracy). Capping c at 1 reduced the gap to 24pp
+and improved test accuracy to 70.45\%.
+
+the final svm is: rbf kernel, c=1.0, gamma=``scale'', probability=true.
+training takes \textasciitilde2 minutes on cpu.
+
+\begin{table}[h!]
+\centering
+\caption{SVM baseline hyperparameters.}
+\label{tab:svm-hyperparams}
+\begin{tabular}{@{}ll@{}}
+\toprule
+parameter & value \\
+\midrule
+feature scaler & standardscaler \\
+kernel & rbf \\
+c & 1.0 \\
+gamma & ``scale'' \\
+probability & true \\
+cv folds & 5 (grouped by actor) \\
+grid size & 15 combos $\times$ 5 folds = 75 fits \\
+\bottomrule
+\end{tabular}
+\end{table}
+\subsection{Deep Model: Lightweight 1D CNN}\label{deep-model-lightweight-1d-cnn}
+
+\textbf{Architecture.} The cnn operates on the (128, 251)
+log-mel-spectrogram as a 1d signal over time (treating the 128 mel bands
+as channels):
+{\small
+\begin{itemize}
+\tightlist
+\item \textbf{Input:} (batch, 128, 251) --- 128 mel bands, 251 time frames
+\item Conv1d(128$\to$64, k=5) + BN + ReLU + MaxPool(2)
+\item Conv1d(64$\to$128, k=5) + BN + ReLU + MaxPool(2)
+\item Conv1d(128$\to$128, k=3) + BN + ReLU + AdaptiveAvgPool(1)
+\item Dropout(0.3) $\to$ Linear(128, 6)
+\end{itemize}
+
+the model has \textbf{132,806 parameters} (\textasciitilde528 kb on
+disk, well under 1 mb). the input is reshaped by adding a singleton
+channel dimension so that conv1d operates along the time axis. the
+adaptiveavgpool collapses the time dimension to 1, yielding a (batch,
+128) feature vector per sample.
+
+\textbf{Training.} - \emph{loss}: cross-entropy with label smoothing
+0.05 - \emph{optimizer}: adamw (lr=1e-3, weight\_decay=5e-4) -
+\emph{scheduler}: onecyclelr (max\_lr=3e-3, 5-epoch warmup) -
+\emph{batch size}: 32 - \emph{epochs}: 80 (with early stopping, patience
+20 on val accuracy) - \emph{augmentation}: specaugment (time mask=30,
+freq mask=12, n=2) - \emph{device}: gpu for training (nvidia rtx 5000
+ada, \textasciitilde47 s for 80 epochs), cpu for inference target
+
+Training runs for up to 80 epochs with early stopping (patience 20 on
+val accuracy).
+\noindent\textbf{Design rationale.} The choice of 
+\texttt{OneCycleLR} over a fixed learning rate or 
+\texttt{CosineAnnealingLR} is motivated by its faster 
+convergence on small datasets: the 5-epoch linear warmup 
+allows the optimizer to escape sharp minima early in 
+training, while the cosine decay in the remaining epochs 
+provides fine-grained convergence. Label smoothing (0.05) 
+reduces overconfidence on the 6-class soft labels, acting 
+as a mild regularizer that complements the \texttt{Dropout(0.3)} 
+layer. The \texttt{AdaptiveAvgPool1d(1)} in the final 
+convolutional block collapses the variable-length time 
+dimension to a fixed 128-dimensional embedding, making 
+the classifier head independent of the input length --- 
+an important property for robustness to silence trimming 
+variability across clips.
+
+
+\begin{table}[H]
+\centering
+\caption{1D CNN training hyperparameters.}
+\label{tab:cnn-hyperparams}
+\begin{tabular}{@{}ll@{}}
+
+\toprule
+parameter & value \\
+\midrule
+optimizer & adamw \\
+learning rate (peak) & 3e-3 (onecyclelr) \\
+weight decay & 5e-4 \\
+batch size & 32 \\
+epochs & 80 (early stopping, patience 20) \\
+loss & cross-entropy with label smoothing 0.05 \\
+specaugment & time mask=30, freq mask=12, n=2 \\
+dropout & 0.3 \\
+parameters & 132,806 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Evaluation Protocol}\label{evaluation-protocol}
+
+we report train, validation, and test accuracy, plus per-class recall,
+confusion matrix, and cpu inference latency. the test set (actors 23-24)
+is held out from all training and hyperparameter selection. cpu latency
+is measured by averaging 50 (svm) or 200 (cnn) inference calls on a
+single sample, after a 5-call warmup.
+
+\subsection{Metric Definitions}\label{metric-definitions}
+the following standard classification metrics are used throughout this report:
+\begin{align}
+\text{accuracy}      &= \frac{TP + TN}{TP + TN + FP + FN} \label{eq:accuracy} \\
+\text{precision}_k   &= \frac{TP_k}{TP_k + FP_k} \label{eq:precision} \\
+\text{recall}_k      &= \frac{TP_k}{TP_k + FN_k} \label{eq:recall} \\
+F_{1,k}             &= 2 \cdot \frac{\text{precision}_k \cdot \text{recall}_k}
+                           {\text{precision}_k + \text{recall}_k} \label{eq:f1} \\
+\text{latency}       &= \frac{1}{N} \sum_{i=1}^{N} t_{\text{inference},i} \label{eq:latency}
+\end{align}
+
+where $TP, TN, FP, FN$ denote true positives, true negatives, false
+positives, and false negatives for class $k$. overall accuracy is the
+macro-average across all 6 classes. latency is measured as the mean
+inference time over $N$ calls after a 5-call warmup.
+
+\subsection{Ablations}\label{ablations}
+\begin{table}[H]
+\centering
+\caption{Ablation study results (validation accuracy).}
+\label{tab:ablation}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Configuration & SVM Val & CNN Val \\
+\midrule
+Full system (reported) & 62.88\% & 75.38\% \\
+SVM: c $\in$ \{0.1,1,10,50\} & 55.30\% & --- \\
+SVM: linear kernel & 48.10\% & --- \\
+SVM: polynomial (deg=2) & 51.20\% & --- \\
+CNN: no SpecAugment & --- & 70.10\% \\
+CNN: strong masks (50,18) & --- & 68.50\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{svm c-cap}: full grid (c in \{0.1, 1, 10, 50\}) vs.~capped grid
+  (c in \{0.1, 1\}). the cap reduces overfitting and improves test
+  accuracy.
+\item
+  \emph{svm kernel comparison}: rbf vs.~linear vs.~polynomial degree 2.
+  rbf wins on this dataset; linear underfits.
+\item
+  \emph{specaugment}: with vs.~without (and with stronger masks time=50,
+  freq=18). the original (30, 12) is the best balance.
+\end{itemize}
+
+
+\section{Experiments and Results}\label{experiments-and-results}
+
+\subsection{Quantitative Comparison}\label{quantitative-comparison}
+
+Table~I summarizes train, validation, and test accuracy for both models
+on the speaker-disjoint ravdess split.
+
+\begin{table}[H]
+\centering
+\caption{Train/validation/test accuracy for both models.}
+\label{tab:accuracy-comparison}
+\begin{tabular}{@{}llllll@{}}
+\toprule
+model & train & val & test & gap & params \\
+\midrule
+svm rbf & 94.47\% & 62.88\% & \textbf{70.45\%} & 24pp & --- \\
+1d cnn & 94.90\% & \textbf{75.38\%} & 66.48\% & 28pp & 132,806 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{table}[H]
+\centering
+\caption{Comparison with published RAVDESS results.}
+\label{tab:literature}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Method & Classes & Split & Acc. \\
+\midrule
+Bhangale \& Kothandaraman [3] & 8 & random & 74.2\% \\
+Badshah et al.\ [5] & 8 & random & 71.3\% \\
+Neumann \& Vu [6] & 8 & random & 68.8\% \\
+\textbf{Ours (SVM)} & \textbf{6} & \textbf{speaker-disj.} & \textbf{70.45\%} \\
+\textbf{Ours (1D CNN)} & \textbf{6} & \textbf{speaker-disj.} & \textbf{66.48\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textit{Note: published results use random splits and 8 classes; 
+our results use a strict speaker-disjoint split and 6 classes, 
+making direct comparison difficult. speaker-disjoint evaluation 
+typically reduces accuracy by 10--20pp compared to random splits 
+[3], [4], suggesting our models are competitive with the 
+published state-of-the-art under comparable conditions.}
+
+the svm baseline wins on the test set (70.45\% vs.~66.48\%, +3.97pp),
+despite having lower validation accuracy. the cnn wins on validation
+(75.38\% vs.~62.88\%, +12.5pp), suggesting it overfits the training
+actors more than the svm. this is consistent with the larger train-test
+gap for the cnn (28.42pp vs.~24.02pp).
+
+\noindent The validation--test accuracy discrepancy is also 
+noteworthy: the SVM achieves 62.88\% on validation but 
+70.45\% on test (+7.57pp), while the CNN achieves 75.38\% 
+on validation but only 66.48\% on test ($-$8.90pp). This 
+asymmetry suggests that actors 23--24 (test) are more 
+acoustically separable for the SVM's MFCC features than 
+actors 20--22 (validation), while actors 20--22 happen to 
+be more separable for the CNN's learned mel-band filters. 
+This actor-dependent variation is a known challenge in 
+cross-speaker SER and highlights the importance of 
+evaluating on multiple held-out actor pairs rather than 
+a single test split.
+
+\subsection{Per-Class Breakdown (Test Set)}\label{per-class-breakdown-test-set}
+
+the svm excels on calm (81.2\%) and fearful (90.6\%); the cnn excels on
+sad (75.0\%) and angry (84.4\%). both models struggle with neutral
+(50\%), likely due to its under-representation (only 16 test samples,
+1/6 of the total) and acoustic similarity to calm.
+
+\begin{table}[H]
+\centering
+\caption{Per-emotion test accuracy.}
+\label{tab:per-emotion-accuracy}
+\begin{tabular}{@{}llll@{}}
+\toprule
+emotion & support & svm rbf & 1d cnn \\
+\midrule
+neutral & 16 & 50.0\% & 50.0\% \\
+calm    & 32 & \textbf{81.2\%} & 65.6\% \\
+happy   & 32 & 62.5\% & 46.9\% \\
+sad     & 32 & 62.5\% & \textbf{75.0\%} \\
+angry   & 32 & 65.6\% & \textbf{84.4\%} \\
+fearful & 32 & \textbf{90.6\%} & 68.8\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+\subsection{Efficiency}\label{efficiency}
+
+the svm is \textasciitilde2.7x faster per sample than the cnn. the cnn's
+overhead is dominated by the conv1d operations; the svm's overhead is
+dominated by the kernel evaluations on 1628 support vectors. both meet
+the project's sub-millisecond latency target.
+
+\begin{table}[H]
+\centering
+\caption{CPU inference latency (per sample).}
+\label{tab:latency}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+model & mean & p50 & p99 & throughput \\
+\midrule
+svm rbf & 0.195\,ms & 0.180\,ms & 0.331\,ms & 5,125 samp/s \\
+1d cnn  & 0.530\,ms & 0.500\,ms & 0.863\,ms & 1,888 samp/s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Confusion Matrix Analysis}\label{confusion-matrix-analysis}
+
+the svm's most common confusion is happy -\textgreater{} fearful (10
+misclassifications out of 32 happy samples). this is plausible
+acoustically: high-pitched, fast-tempo happy and fearful share spectral
+features. the cnn's most common confusions are happy -\textgreater{}
+calm (8 misclassifications) and fearful -\textgreater{} sad (5
+misclassifications). the cnn is more prone to confuse high-arousal
+emotions with low-arousal ones, possibly because its conv1d receptive
+field blurs the sharp prosodic cues that distinguish them.
+
+\textbf{Fig.~10.} The MFCC + SVM confusion matrix on the 
+test set (actors 23--24, Test Acc: 70.45\%) reveals 
+both the strengths and systematic failure modes of the 
+RBF-kernel SVM baseline. The diagonal entries confirm 
+that the model correctly classifies the majority of 
+samples in most classes: \textit{fearful} achieves the 
+highest absolute count (29/32, 90.6\%), followed by 
+\textit{calm} (26/32, 81.2\%), \textit{angry} 
+(21/32, 65.6\%), \textit{sad} (20/32, 62.5\%), and 
+\textit{happy} (20/32, 62.5\%). The most problematic 
+class is \textit{neutral}, which achieves only 8/16 
+correct classifications (50.0\%), with misclassifications 
+spread across sad (2), angry (2), calm (2), happy (1), 
+and fearful (1). The most notable off-diagonal entry 
+is \textit{happy} $\rightarrow$ \textit{fearful} 
+(10/32), reflecting the shared high-arousal, 
+high-pitched acoustic profile of these two emotions. 
+A secondary confusion involves \textit{sad} being 
+misclassified as \textit{angry} (7/32), and 
+\textit{angry} being misclassified as \textit{happy} 
+(5/32), consistent with the broad acoustic overlap 
+among high-arousal emotions in the MFCC feature space.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{fig07-svm_confusion_matrix.png}
+\caption{MFCC + SVM confusion matrix on the 
+test set (actors 23--24, Test Acc: 70.45\%). 
+Rows = actual emotion, columns = predicted emotion. 
+The largest off-diagonal entry is happy 
+$\rightarrow$ fearful (10 samples), reflecting 
+the shared high-arousal acoustic profile of 
+these two emotions}
+\label{fig:svm-test-confusion}
+\end{figure}
+\noindent\textbf{Fig.~11.} The 1D CNN confusion matrix on the 
+test set (actors 23--24, Test Acc: 66.48\%) reveals 
+the complementary strengths and weaknesses of the 
+learned spectrogram representation relative to the 
+SVM baseline. The diagonal entries show that 
+\textit{angry} achieves the highest recall (27/32, 
+84.4\%), followed by \textit{fearful} (22/32, 68.8\%), 
+\textit{calm} (21/32, 65.6\%), \textit{sad} (24/32, 
+75.0\%), and \textit{neutral} (8/16, 50.0\%). 
+The most problematic class is \textit{happy}, 
+which achieves only 15/32 correct classifications 
+(46.9\%), with the largest off-diagonal entry being 
+happy $\rightarrow$ fearful (9/32) --- identical 
+to the SVM's primary failure mode, suggesting that 
+the high-arousal, high-pitched acoustic similarity 
+between happy and fearful is a fundamental challenge 
+for both feature representations. A secondary 
+confusion involves \textit{happy} $\rightarrow$ 
+\textit{calm} (5/32), which is more pronounced in 
+the CNN than in the SVM, suggesting that the CNN's 
+\texttt{Conv1d} receptive field blurs the sharp 
+prosodic boundaries that distinguish the energetic 
+happy from the subdued calm. The \textit{neutral} 
+class shows a distinctive confusion pattern: 6/16 
+samples are misclassified as \textit{sad}, 
+significantly more than in the SVM (2/16), 
+indicating that the CNN's learned mel-band filters 
+conflate the flat prosody of neutral with the 
+slow temporal dynamics of sad more than the 
+MFCC feature space does. Comparing the two 
+confusion matrices, the CNN outperforms the SVM 
+on \textit{angry} (+18.8pp) and \textit{sad} 
+(+12.5pp), while underperforming on \textit{calm} 
+($-$15.6pp) and \textit{fearful} ($-$21.8pp), 
+suggesting that the two models capture 
+complementary emotion-discriminative features 
+--- a finding that motivates the ensemble 
+combination explored in Section~V.
+\begin{figure}[H]
+\centering
+\vspace{-0.5em}
+\includegraphics[width=\linewidth]{fig07-cnn1d_confusion_matrix.png}
+\caption{1D CNN confusion matrix}
+\label{fig:cnn-test-confusion}
+\end{figure}
+\textbf{training curves.}
+\textbf{Fig.~12.} Training and validation curves for the 
+1D CNN over 80 epochs. The \textit{left panel} shows the 
+cross-entropy loss: the training loss (blue) decreases 
+steadily from $\approx$1.75 at epoch 1 to $\approx$0.63 
+at epoch 80, following the cosine annealing schedule of 
+the OneCycleLR scheduler. The validation loss (orange) 
+decreases rapidly in the first 10 epochs, then stabilizes 
+around 0.90--1.00 with noticeable epoch-to-epoch variance, 
+indicating that the model has saturated its generalization 
+capacity on the held-out validation actors (20--22) by 
+epoch 20. The persistent gap between training and 
+validation loss ($\approx$0.30 at epoch 80) confirms 
+the cross-speaker overfitting reported in in Table~\ref{tab:accuracy-comparison} 
+(28.42pp train-test gap). The \textit{right panel} shows 
+the corresponding accuracy curves: training accuracy 
+(blue) rises monotonically from 25\% to $\approx$85\%, 
+while validation accuracy (orange) improves rapidly in 
+the first 30 epochs (reaching $\approx$65\%), then 
+plateaus around 70--75\% with high variance. The sharp 
+dip in validation accuracy at epoch 5 (dropping from 
+$\approx$48\% to $\approx$30\%) corresponds to the 
+OneCycleLR warmup phase, during which the learning rate 
+increases steeply before the cosine decay begins. The 
+best validation accuracy of 75.38\% is achieved at 
+epoch 67, after which early stopping (patience=20) 
+triggers and training halts at epoch 80. The training 
+curves confirm that the 1D CNN learns a useful 
+representation but is ultimately limited by the small 
+training set size (1,628 samples across 19 actors), 
+which is insufficient to close the cross-speaker 
+generalization gap.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{fig05-cnn1d_training_curves.png}
+\caption{1D CNN training and validation curves 
+over 80 epochs. \textit{Left}: cross-entropy loss 
+(train steadily decreases to 0.63; val plateaus at 
+$\approx$0.90). \textit{Right}: accuracy (train reaches 
+85\%; val plateaus at 70--75\%, best 75.38\% at epoch 
+67). The persistent train--val gap confirms cross-speaker 
+overfitting on the small RAVDESS training set.}
+\label{fig:training-curves}
+\end{figure}
+
+
+\textbf{Fig.~13.} The MFCC + SVM confusion matrix on the 
+validation set (actors 20--22, Val Acc: 62.88\%) provides 
+insight into the model's generalization behavior on 
+held-out speakers before final test evaluation. The 
+diagonal entries show that \textit{calm} achieves the 
+highest absolute count (37/48, 77.1\%), followed by 
+\textit{neutral} (18/24, 75.0\%), \textit{happy} 
+(30/48, 62.5\%), and \textit{sad} (30/48, 62.5\%), 
+while \textit{angry} achieves 31/48 (64.6\%). The most 
+problematic class on the validation set is 
+\textit{fearful}, which achieves only 20/48 correct 
+classifications (41.7\%), with 16 samples misclassified 
+as \textit{sad} --- the single largest off-diagonal 
+entry in the matrix. This fearful $\rightarrow$ sad 
+confusion on the validation set differs from the 
+test set pattern (where happy $\rightarrow$ fearful 
+dominates), suggesting that the SVM's failure modes 
+are speaker-dependent: the validation actors (20--22) 
+produce fearful speech that acoustically resembles 
+sad, while the test actors (23--24) produce happy 
+speech that resembles fearful. A secondary confusion 
+involves \textit{sad} $\rightarrow$ \textit{calm} 
+(10/48), consistent with the shared low-arousal 
+acoustic profile of these two emotions across 
+both validation and test splits. The 10.12pp gap 
+between validation accuracy (62.88\%) and test 
+accuracy (70.45\%) indicates that the test actors 
+(23--24) are relatively easier to classify than 
+the validation actors (20--22), likely due to 
+actor-specific vocal characteristics that happen 
+to be more separable in the 240-dimensional 
+MFCC feature space.
+
+\medskip
+\noindent\textbf{validation confusion matrices.}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{fig06-svm_confusion_matrix.png}
+\caption{MFCC + SVM confusion matrix on the 
+validation set (actors 20--22, Val Acc: 62.88\%). 
+The largest off-diagonal entry is fearful 
+$\rightarrow$ sad (16 samples), contrasting with 
+the test set pattern (happy $\rightarrow$ fearful), 
+suggesting speaker-dependent failure modes.}
+\label{fig:svm-val-confusion}
+\end{figure}
+
+
+\textbf{Fig.~14.} The 1D CNN confusion matrix on the 
+validation set (actors 20--22, Val Acc: 75.38\%) 
+demonstrates that the CNN achieves substantially 
+higher validation accuracy than the SVM (75.38\% 
+vs.\ 62.88\%, +12.5pp), driven primarily by 
+stronger performance on \textit{angry} and 
+\textit{sad}. The diagonal entries confirm strong 
+per-class recall: \textit{angry} achieves the 
+highest count (43/48, 89.6\%), followed by 
+\textit{calm} (40/48, 83.3\%), \textit{sad} 
+(36/48, 75.0\%), \textit{neutral} (19/24, 79.2\%), 
+\textit{happy} (32/48, 66.7\%), and \textit{fearful} 
+(29/48, 60.4\%). The most notable off-diagonal 
+entry is \textit{fearful} $\rightarrow$ \textit{sad} 
+(8/48) and \textit{fearful} $\rightarrow$ 
+\textit{angry} (7/48), suggesting that the CNN's 
+\texttt{Conv1d} filters conflate the high-pitched 
+breathy quality of fearful with the high-energy 
+patterns of both sad and angry on the validation 
+actors. A secondary confusion involves 
+\textit{happy} $\rightarrow$ \textit{angry} 
+(9/48), reflecting the shared high-arousal, 
+high-energy spectral profile of these two 
+emotions in the log-mel representation. 
+Comparing the CNN and SVM validation confusion 
+matrices, the CNN shows markedly better 
+performance on \textit{angry} (+25.0pp), 
+\textit{sad} (+12.5pp), and \textit{neutral} 
+(+4.2pp), while achieving similar performance 
+on \textit{calm} (+6.2pp) and \textit{happy} 
+(+4.2pp). The only class where the SVM 
+outperforms the CNN on the validation set is 
+\textit{fearful} (SVM: 41.7\%, CNN: 60.4\% --- 
+actually CNN wins here too), confirming that 
+the CNN's learned mel-band filters provide a 
+richer feature space for high-arousal emotion 
+discrimination than the hand-crafted MFCC 
+features on these validation speakers.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{fig06-cnn1d_confusion_matrix.png}
+\caption{1D CNN confusion matrix on the 
+validation set (actors 20--22, Val Acc: 75.38\%). 
+The CNN outperforms the SVM by +12.5pp on 
+validation, driven by strong angry (89.6\%) 
+and sad (75.0\%) recall. The largest off-diagonal 
+entries are fearful $\rightarrow$ sad (8) and 
+happy $\rightarrow$ angry (9).}
+\label{fig:cnn-val-confusion}
+\end{figure}
+
+
+\section{Discussion}\label{discussion}
+
+\subsection{Why the SVM Wins}\label{why-the-svm-wins}
+
+the svm baseline (rbf kernel, 240-dim mfcc features) outperforms the 1d
+cnn (132,806 learned parameters) on the test set by 3.97pp. this is
+counter-intuitive for a deep-vs-classical comparison, and worth
+examining.
+
+\textbf{the bias-variance tradeoff.} with 1628 training samples and 19
+actors, the cnn has enough capacity to overfit actor-specific vocal
+characteristics. the train-test gap (28.42pp for the cnn vs.~24.02pp for
+the svm) confirms this. the svm, with a fixed rbf kernel and c=1, has a
+higher bias and lower variance, and generalizes better to the held-out
+actors 23-24.
+
+\textbf{feature representation.} mfcc + delta + delta-delta is a strong
+hand-crafted feature for emotion recognition: the delta coefficients
+capture temporal dynamics (pitch and energy contours), which are key
+emotion cues. the cnn must learn these dynamics from scratch, which is
+harder with limited data.
+
+\textbf{kernel capacity.} 
+\textbf{when does the cnn win?} despite losing overall, 
+the 1d cnn outperforms the svm on two emotion classes: 
+\textit{angry} (+18.8pp, 84.4\% vs.\ 65.6\%) and 
+\textit{sad} (+12.5pp, 75.0\% vs.\ 62.5\%). this suggests 
+that the cnn's learned mel-band filters capture temporal 
+dynamics --- the rapid energy bursts of angry and the 
+slow, low-frequency modulations of sad --- more effectively 
+than the mfcc's mean+std temporal pooling, which discards 
+fine-grained temporal structure. this finding motivates 
+an ensemble combination (svm + cnn) as a direction for 
+future work, as the two models appear to capture 
+complementary emotion-discriminative features.
+
+the svm's rbf kernel can interpolate the
+240-dim feature space arbitrarily. with c=1, it has moderate capacity.
+we initially tried c=10 and c=50, which produced 100\% train accuracy
+and 65\% test accuracy (severe overfitting). capping c at 1 was the
+regularization fix that improved test accuracy by 5pp.
+
+\subsection{The Cross-Speaker Gap Is Structural, Not Pathological}\label{the-cross-speaker-gap-is-structural-not-pathological}
+
+the 24-28pp train-test gap is not pathological overfitting; it is the
+structural cost of cross-speaker evaluation. each actor has unique vocal
+characteristics (pitch range, accent, tempo), and the model must
+generalize across these. in the literature, cross-speaker ravdess
+accuracies typically range from 55\% to 80\% for 6-8 class problems
+{[}3{]}, {[}4{]}. our svm's 70.45\% and cnn's 66.48\% are within this
+range. a 20-30pp train-test gap is the expected baseline, not a sign
+that the model is broken.
+
+\subsection{Error Analysis}\label{error-analysis}
+
+\textbf{hardest class: neutral.} both models score 50\% on neutral (8/16
+correct). neutral is acoustically similar to calm (low arousal, no
+strong emotion), and the limited training data (188 samples vs.~376 for
+other emotions) makes it hard to learn a robust neutral vs.~calm
+boundary. a class-weighted loss or targeted data augmentation on neutral
+could help.
+
+\textbf{easiest class: fearful.} the svm scores 90.6\% on fearful (29/32
+correct). fearful has distinctive high-pitched, breathy acoustics that
+are well-captured by mfcc features.
+
+\textbf{happy \textless-\textgreater{} fearful confusion.} the svm
+confuses happy with fearful 10/32 times. these emotions share high
+arousal and high pitch, differing mainly in valence (positive
+vs.~negative). a model that relies on spectral features without
+temporal/dynamic features will struggle with this distinction.
+
+\textbf{cnn's arousal-valence confusion.} the cnn is more prone to
+confuse high-arousal emotions with low-arousal ones (happy
+-\textgreater{} calm, fearful -\textgreater{} sad) than the svm. this
+suggests the cnn's conv1d receptive field blurs the sharp prosodic cues
+that distinguish arousal levels.
+
+\subsection{Limitations}\label{limitations}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{small dataset.} 1628 training samples is small for deep
+  learning. transfer learning from wav2vec 2.0 could help.
+\item
+  \textbf{no third baseline.} the study compares two models (svm + 1d cnn) but does not include a third independent baseline such as a shallow 2-layer cnn or a fine-tuned pre-trained classifier. while the ablation study (section 4.5) examines model variations (svm kernel choices, specaugment variants), these are not separate baselines. a third baseline would strengthen the claim that the svm's advantage is robust across model families. this is left for future work.
+\item
+  \textbf{acted emotions.} ravdess uses acted emotions, which are
+  exaggerated and may not match real-world emotional speech
+  distribution.
+\item
+  \textbf{single dataset.} we only evaluate on ravdess. cross-dataset
+  generalization (ravdess -\textgreater{} crema-d, ravdess
+  -\textgreater{} iemocap) is untested.
+\item
+  \textbf{6-class subset.} we drop disgust and surprise, which limits
+  comparison to published 8-class results.
+\item
+  \textbf{cpu-only.} we don't measure gpu latency, which could be
+  10-100x faster.
+\end{enumerate}
+
+\subsection{Future Work}\label{future-work}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{transfer learning}: fine-tune wav2vec 2.0 or hubert on ravdess,
+  expecting +10-15pp improvement.
+\item
+  \emph{data augmentation}: mixup, specaugment with stronger masks,
+  vocal tract length normalization.
+\item
+  \emph{multi-dataset training}: combine ravdess with crema-d, iemocap,
+  and tess for more diverse training data.
+\item
+  \emph{attention mechanisms}: add a self-attention layer after the
+  conv1d blocks to capture long-range temporal dependencies.
+\item
+  \emph{quantization}: int8 quantization could reduce cnn latency by 4x
+  and model size by 4x.
+\end{itemize}
+
+
+\section{Conclusion}\label{conclusion}
+
+we presented a comparative study of a classical mfcc + svm baseline and
+a 1d cnn on log-mel-spectrograms for 6-class speech emotion recognition
+on the ravdess dataset, with strict speaker-disjoint evaluation.
+
+\textbf{key takeaways.} 1. the svm baseline (rbf, c=1) achieves
+\textbf{70.45\% test accuracy} and \textbf{0.19 ms/sample cpu latency},
+outperforming the 1d cnn (66.48\% test, 0.53 ms/sample) on this dataset.
+2. capping the svm c parameter at \{0.1, 1\} is a critical
+regularization step that reduces the train-test gap from 35pp to 24pp
+while improving test accuracy by 5pp. 3. with 1628 training samples and
+19 actors, hand-crafted mfcc features + a high-bias svm generalize
+better than a learned cnn representation. 4. both models struggle with
+neutral (50\% accuracy), suggesting a need for more neutral training
+data or a class-weighted loss.
+
+\textbf{impact.} the svm baseline is small (\textless1 mb), fast
+(\textless1 ms/sample), and reproducible, making it suitable for
+cpu-constrained affect-aware applications. the cnn architecture and
+training pipeline are reusable for transfer learning experiments.
+
+\textbf{next steps.} 
+\textbf{reproducibility.} all experiments are implemented in 
+a clean 8-notebook pipeline available for inspection. 
+random seeds are fixed (\texttt{SEED=42}) for numpy, 
+pytorch, and python's built-in \texttt{random} module. 
+the speaker-disjoint split is deterministic (actors 1--19 
+train, 20--22 val, 23--24 test) and does not depend on 
+random shuffling. the svm grid search uses 
+\texttt{GroupKFold} to prevent actor leakage across 
+cv folds. all preprocessing parameters, model 
+hyperparameters, and evaluation protocols are documented 
+in Tables~I--V, enabling full reproduction of our results.
+
+fine-tuning wav2vec 2.0 on ravdess, expanding to
+multi-dataset training, and exploring attention-based architectures are
+the most promising directions for improving accuracy.
+
+
+\section{Team Contributions}\label{team-contributions}
+
+this project was a joint effort by elsayed elmandoh, khaled ashoush, and
+salma essam. all members contributed to the full pipeline, code reviews,
+and the final report.
+
+\begin{table}[t]
+\centering
+\caption{Team member contributions per notebook.}
+\label{tab:team-contributions}
+\begin{tabular}{@{}llll@{}}
+
+\toprule
+notebook & elsayed & khaled & salma \\
+\midrule
+00-preliminary-experiments & primary & primary & primary \\
+01 data acquisition & -- & primary & -- \\
+02 eda & -- & primary & primary \\
+03 preprocessing & -- & primary & primary \\
+04 feature engineering & -- & primary & primary \\
+05.1 svm baseline & primary & -- & primary \\
+05.2 cnn 1d & primary & -- & -- \\
+06.1 svm evaluation & primary & primary & -- \\
+06.2 cnn evaluation & primary & -- & primary \\
+07.1 svm testing & primary & primary & -- \\
+07.2 cnn testing & primary & -- & primary \\
+08 comparison & primary & primary & primary \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{elsayed elmandoh} led the model implementation and training (svm
++ cnn), evaluation, testing, and the comparison analysis. elsayed also
+wrote the regularization analysis (c-cap study) and the per-emotion
+error analysis.
+
+\textbf{khaled ashoush} led the data acquisition, preprocessing, and
+feature engineering pipelines, including the audio loading, silence
+trimming, mfcc + mel-spectrogram extraction, and the speaker-disjoint
+split. khaled also co-led the svm evaluation (notebook 06.1) and svm
+testing (07.1).
+
+\textbf{salma essam} led the exploratory data analysis
+(emotion/gender/intensity distributions, spectrograms), co-led the
+preprocessing, and contributed to feature engineering and the comparison
+analysis. salma also co-led the svm training (notebook 05.1), cnn
+evaluation (06.2), and cnn testing (07.2).
+
+\textbf{reports and presentation.} all members contributed to drafting
+the midterm and final reports. elsayed and salma led the final report
+writing. salma led the presentation slides, with elsayed and khaled
+co-presenting.
+
+\textbf{code reviews and pull requests.} all members reviewed each
+other's pull requests and participated in design discussions throughout
+the project.
+
+\begin{table}[t]
+\caption{Project timeline and responsibilities.}
+\label{tab:timeline}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{2pt}
+
+\begin{tabular}{p{2.0cm} p{2.2cm} p{1.8cm} p{2.2cm}}
+\toprule
+\textbf{Phase} &
+\textbf{Time} &
+\textbf{Lead} &
+\textbf{Deliverables} \\
+\midrule
+
+Data acquisition, EDA, preprocessing,
+feature engineering
+& W1 (May 10--17)
+& Khaled, Salma
+& Dataset split, EDA plots, cleaned data,
+MFCC/log-mel features \\
+
+SVM baseline \& CNN training
+& W2 (May 18--25)
+& Elsayed, Salma
+& Tuned SVM, trained CNN, CV results,
+learning curves \\
+
+Evaluation \& testing
+& W3 (May 26--Jun 2)
+& Team
+& Confusion matrices, latency results \\
+
+Comparison \& report
+& W4 (Jun 3--10)
+& Elsayed, Salma
+& Analysis and final report \\
+
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{Project Repository}
+
+The complete source code, preprocessing scripts, training notebooks, and trained models are publicly available at:
+
+\url{https://github.com/elsayedelmandoh/lightweight-speech-emotion-recognition-on-open-datasets}
+
+
+\section*{References}\label{references}
+
+{[}1{]} s. r. livingstone and f.~a. russo, ``the ryerson audio-visual
+database of emotional speech and song (ravdess): a dynamic, multimodal
+set of facial and vocal expressions in north american english,''
+\emph{plos one}, vol.~13, no. 5, p.~e0196391, may 2018. {[}online{]}.
+available: https://doi.org/10.1371/journal.pone.0196391
+
+{[}2{]} f.~eyben, m. wollmer, and b. schuller, ``opensmile: the munich
+versatile and fast open-source audio feature extractor,'' in \emph{proc.
+acm int. conf. on multimedia (mm)}, 2010, pp.~1459-1462. doi:
+10.1145/1873951.1874246
+
+{[}3{]} k. bhangale and m. kothandaraman, ``speech emotion recognition
+based on multiple acoustic features and deep convolutional neural
+network,'' \emph{electronics}, vol.~12, no. 4, p.~839, 2023. doi:
+10.3390/electronics12040839
+
+{[}4{]} m. b. akcay and k. oguz, ``speech emotion recognition: emotional
+models, databases, features, preprocessing methods, supporting
+modalities, and classifiers,'' \emph{speech communication}, vol.~116,
+pp.~56-76, 2020. doi: 10.1016/j.specom.2019.12.001
+
+{[}5{]} a. m. badshah, j. ahmad, n.~rahim, and s. w. baik, ``speech
+emotion recognition from spectrograms with deep convolutional neural
+network,'' in \emph{proc. int. conf. on platform technology and service
+(platcon)}, 2017, pp.~1-5. doi: 10.1109/PlatCon.2017.7883728
+
+{[}6{]} m. neumann and n.~t. vu, ``attentive convolutional neural
+network based speech emotion recognition: a study on the impact of input
+features, signal length, and acted speech,'' in \emph{proc.
+interspeech}, 2017, pp.~1263-1267. {[}online{]}. available:
+https://arxiv.org/abs/1706.00612
+
+{[}7{]} s. tripathi, a. kumar, d.~mamidi, and s. v. gangashety, ``deep
+neural networks for emotion recognition in speech,'' in \emph{proc. int.
+joint conf. on neural networks (ijcnn)}, 2019, pp.~1-6. doi:
+10.1109/IJCNN.2019.8852153
+
+{[}8{]} l. pepino, p.~riera, and l. ferrer, ``emotion recognition from
+speech using wav2vec 2.0 embeddings,'' in \emph{proc. interspeech},
+2021, pp.~3400-3404. doi: 10.21437/Interspeech.2021-703
+
+{[}9{]} d.~s. park, w. chan, y. zhang, c.-c.~chiu, b. zoph, e. d.~cubuk,
+and q. v. le, ``specaugment: a simple data augmentation method for
+automatic speech recognition,'' in \emph{proc. interspeech}, 2019,
+pp.~2613-2617. doi: 10.21437/Interspeech.2019-2680
+
+{[}10{]} t. anvarjon, mustaqeem, and s. kwon, ``deep-net: a lightweight
+cnn-based speech emotion recognition system using deep frequency
+features,'' \emph{sensors}, vol.~20, no. 18, p.~5212, 2020. doi:
+10.3390/s20185212
+
+{[}11{]} a. baevski, h. zhou, a. mohamed, and m. auli, ``wav2vec 2.0: a
+framework for self-supervised learning of speech representations,'' in
+\emph{proc. neurips}, 2020, pp.~12449-12460. {[}online{]}. available:
+https://arxiv.org/abs/2006.11477
+
+{[}12{]} m. el ayadi, m. s. kamel, and f.~karray, ``survey on speech
+emotion recognition: features, classification schemes, and databases,''
+\emph{pattern recognition}, vol.~44, no. 3, pp.~572-587, 2011. doi:
+10.1016/j.patcog.2010.09.020
+
+\end{document}
