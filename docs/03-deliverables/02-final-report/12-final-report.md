@@ -399,8 +399,8 @@ this project was a joint effort by elsayed elmandoh, khaled ashoush, and salma e
 |-------|------|------|-------------|
 | data acquisition, eda, preprocessing, feature engineering | W1 (May 10-17) | Khaled, Salma | dataset split, eda plots, cleaned data, mfcc/log-mel features |
 | svm baseline & cnn training | W2 (May 18-25) | Elsayed, Salma | tuned svm, trained cnn, cv results, learning curves |
-| evaluation & testing | W3 (May 26-Jun 2) | Team | confusion matrices, latency results |
-| comparison & report | W4 (Jun 3-10) | Elsayed, Salma | analysis and final report |
+| evaluation & testing | W3 (May 26-Jun 2) | Elsayed, Salma | confusion matrices, latency results |
+| comparison & report | W4 (Jun 3-10) | Team | analysis and final report |
 
 **Elsayed Elmandoh** led the model implementation and training (svm + cnn), evaluation, testing, and the comparison analysis. Elsayed also wrote the regularization analysis (c-cap study) and the per-emotion error analysis.
 
