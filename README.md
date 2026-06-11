@@ -110,9 +110,13 @@ lightweight speech emotion recognition on open datasets/
 │   │   ├── 07.1-svm-baseline.ipynb
 │   │   └── 07.2-cnn-1d.ipynb
 |   |
-│   └── 08-comparision/
+│   ├── 08-comparision/
+│   │   ├── 00-quickstart.ipynb
+│   │   └── 08-svm-vs-cnn.ipynb
+|   |
+│   └── 09-additional-results/
 │       ├── 00-quickstart.ipynb
-│       └── 08-svm-vs-cnn.ipynb
+│       └── README.md
 |   
 ├── src/
 │   ├── config/               
