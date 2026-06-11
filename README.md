@@ -116,6 +116,7 @@ lightweight speech emotion recognition on open datasets/
 |   |
 │   └── 09-additional-results/
 │       ├── 00-quickstart.ipynb
+│       ├── Wav2Vec2-panns-cnn-2d.py
 │       └── README.md
 |   
 ├── src/
