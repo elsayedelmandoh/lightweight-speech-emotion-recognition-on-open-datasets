@@ -272,7 +272,7 @@ input (128, 251) log-mel
 - reports are joint efforts: all team members contribute to the draft, then we all review and edit
 - presentation script is written collaboratively, salma builds the slides from the agreed script
 
-### Future Work
+# Future Work
 
 ## Model Categories
 
