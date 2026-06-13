@@ -273,7 +273,7 @@ input (128, 251) log-mel
 - presentation script is written collaboratively, salma builds the slides from the agreed script
 
 # Future Work
-
+**[https://github.com/elsayedelmandoh/lightweight-speech-emotion-recognition-on-open-datasets/tree/main/notebooks/09-additional-results](https://github.com/elsayedelmandoh/lightweight-speech-emotion-recognition-on-open-datasets/tree/main/notebooks/09-additional-results)**
 ## Model Categories
 
 ### 1. Classical Machine Learning
