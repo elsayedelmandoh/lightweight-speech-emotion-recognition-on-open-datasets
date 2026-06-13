@@ -116,7 +116,7 @@ lightweight speech emotion recognition on open datasets/
 |   |
 │   └── 09-additional-results/
 │       ├── 00-quickstart.ipynb
-│       ├── Wav2Vec2-panns-cnn-2d.py
+│       ├── Wav2Vec2-panns-cnn-2d.ipynb
 │       └── README.md
 |   
 ├── src/
@@ -272,6 +272,34 @@ input (128, 251) log-mel
 - reports are joint efforts: all team members contribute to the draft, then we all review and edit
 - presentation script is written collaboratively, salma builds the slides from the agreed script
 
+### Future Work
+
+## Model Categories
+
+### 1. Classical Machine Learning
+| Model | Description |
+|-------|-------------|
+| **Support Vector Machine (SVM)** | Traditional ML baseline using MFCC features with RBF kernel and GridSearchCV optimization |
+
+### 2. Deep Learning (1D)
+| Model | Description |
+|-------|-------------|
+| **CNN1D + Attention + BiLSTM** | One-dimensional convolutional neural network with attention mechanism and bidirectional LSTM for temporal feature extraction |
+
+### 3. Deep Learning (2D)
+| Model | Description |
+|-------|-------------|
+| **CNN2D + Attention + BiLSTM** | Two-dimensional convolutional neural network with attention mechanism and bidirectional LSTM for spectrogram-based feature learning |
+
+### 4. Transfer Learning
+| Model | Description |
+|-------|-------------|
+| **PANNs CNN14** | Pretrained audio neural network from the PANNs (Pretrained Audio Neural Networks) family, fine-tuned for emotion recognition |
+
+### 5. Self-Supervised Learning
+| Model | Description |
+|-------|-------------|
+| **Wav2Vec2 Base** | Facebook's wav2vec2.0 model leveraging self-supervised pretraining on large speech corpora, adapted for emotion classification |
 
 ## contributing
 
